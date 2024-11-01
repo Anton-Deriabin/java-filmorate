@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
@@ -23,7 +24,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             throw new ValidationException("Имя должно быть указано");
         }
@@ -35,11 +36,11 @@ public class FilmController {
         if (film.getDescription().length() > 200) {
             throw new ValidationException("Описание не может быть длиннее 200 символов");
         }
-        if (film.getReleaseDate().isBefore(LocalDate.of(1985, 12, 28))) {
+        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             throw new ValidationException("Дата выхода не может быть раньше " +
                     "даты выхода первого в истории фильма");
         }
-        if (film.getDuration() == null || film.getDuration().toMinutes() <= 0) {
+        if (film.getDuration() == null || film.getDuration() <= 0) {
             throw new ValidationException("Длительность фильма должна быть больше нуля");
         }
         film.setId(getNextId());
@@ -48,7 +49,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@RequestBody Film newFilm) {
+    public Film update(@Valid @RequestBody Film newFilm) {
         if (newFilm.getId() == null) {
             throw new ValidationException("Id должен быть указан");
         }
@@ -63,11 +64,11 @@ public class FilmController {
         if (newFilm.getDescription().length() > 200) {
             throw new ValidationException("Описание не может быть длиннее 200 символов");
         }
-        if (newFilm.getReleaseDate().isBefore(LocalDate.of(1985, 12, 28))) {
+        if (newFilm.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             throw new ValidationException("Дата выхода не может быть раньше " +
                     "даты выхода первого в истории фильма");
         }
-        if (newFilm.getDuration() == null || newFilm.getDuration().toMinutes() <= 0) {
+        if (newFilm.getDuration() == null || newFilm.getDuration() <= 0) {
             throw new ValidationException("Длительность фильма должна быть больше нуля");
         }
         if (films.containsKey(newFilm.getId())) {
