@@ -25,9 +25,6 @@ public class FilmController {
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        if (film.getName() == null || film.getName().isBlank()) {
-            throw new ValidationException("Имя должно быть указано");
-        }
         for (Film value : films.values()) {
             if (film.getName().equals(value.getName())) {
                 throw new DuplicatedDataException(messageNameDuplicate);
@@ -40,7 +37,7 @@ public class FilmController {
             throw new ValidationException("Дата выхода не может быть раньше " +
                     "даты выхода первого в истории фильма");
         }
-        if (film.getDuration() == null || film.getDuration() <= 0) {
+        if (film.getDuration() <= 0) {
             throw new ValidationException("Длительность фильма должна быть больше нуля");
         }
         film.setId(getNextId());
@@ -52,9 +49,6 @@ public class FilmController {
     public Film update(@Valid @RequestBody Film newFilm) {
         if (newFilm.getId() == null) {
             throw new ValidationException("Id должен быть указан");
-        }
-        if (newFilm.getName() == null || newFilm.getName().isBlank()) {
-            throw new ValidationException("Имя должно быть указано");
         }
         for (Film value : films.values()) {
             if (newFilm.getName().equals(value.getName())) {
@@ -68,7 +62,7 @@ public class FilmController {
             throw new ValidationException("Дата выхода не может быть раньше " +
                     "даты выхода первого в истории фильма");
         }
-        if (newFilm.getDuration() == null || newFilm.getDuration() <= 0) {
+        if (newFilm.getDuration() <= 0) {
             throw new ValidationException("Длительность фильма должна быть больше нуля");
         }
         if (films.containsKey(newFilm.getId())) {

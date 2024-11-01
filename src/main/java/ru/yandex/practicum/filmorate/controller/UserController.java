@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
@@ -23,8 +24,8 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
+    public User create(@Valid @RequestBody User user) {
+        if (!user.getEmail().contains("@")) {
             throw new ValidationException("Email должен быть указан и должен содержать символ \"@\"");
         }
         for (User value : users.values()) {
@@ -32,7 +33,7 @@ public class UserController {
                 throw new DuplicatedDataException(messageEmailDuplicate);
             }
         }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+        if (user.getLogin().contains(" ")) {
             throw new ValidationException("Логин должен быть указан и не должен содержать пробелы");
         }
         if (user.getName() == null || user.getName().isBlank()) {
@@ -47,11 +48,11 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@RequestBody User newUser) {
+    public User update(@Valid @RequestBody User newUser) {
         if (newUser.getId() == null) {
             throw new ValidationException("Id должен быть указан");
         }
-        if (newUser.getEmail() == null || newUser.getEmail().isBlank() || !newUser.getEmail().contains("@")) {
+        if (!newUser.getEmail().contains("@")) {
             throw new ValidationException("Email должен быть указан и должен содержать символ \"@\"");
         }
         for (User value : users.values()) {
@@ -59,7 +60,7 @@ public class UserController {
                 throw new DuplicatedDataException(messageEmailDuplicate);
             }
         }
-        if (newUser.getLogin() == null || newUser.getLogin().isBlank() || newUser.getLogin().contains(" ")) {
+        if (newUser.getLogin().contains(" ")) {
             throw new ValidationException("Логин должен быть указан и не должен содержать пробелы");
         }
         if (newUser.getName() == null || newUser.getName().isBlank()) {
