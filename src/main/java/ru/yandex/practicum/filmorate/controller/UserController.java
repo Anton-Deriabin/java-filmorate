@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,17 +33,9 @@ public class UserController {
                 throw new DuplicatedDataException(messageEmailDuplicate);
             }
         }
-        if (user.getLogin().contains(" ")) {
-            log.error("Логин содержит пробелы при добавлении");
-            throw new ValidationException("Логин должен быть указан и не должен содержать пробелы");
-        }
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
             log.debug("Вместо имени использован логин при добавлении");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.error("Дата рождения позднее текущей даты при добавлении");
-            throw new ValidationException("Дата рождения не может быть позднее текущей даты");
         }
         user.setId(getNextId());
         log.debug("Пользователю \"{}\" назначен id = {}", user.getName(), user.getId());
@@ -59,17 +50,9 @@ public class UserController {
             log.error("Id пользователя для обновления не указан");
             throw new ValidationException("Id должен быть указан");
         }
-        if (newUser.getLogin().contains(" ")) {
-            log.error("Логин к обновлению содержит пробелы");
-            throw new ValidationException("Логин должен быть указан и не должен содержать пробелы");
-        }
         if (newUser.getName() == null || newUser.getName().isBlank()) {
             log.debug("Вместо имени использован логин при обновлении");
             newUser.setName(newUser.getLogin());
-        }
-        if (newUser.getBirthday().isAfter(LocalDate.now())) {
-            log.error("Дата рождения позднее текущей даты при обновлении");
-            throw new ValidationException("Дата рождения не может быть позднее текущей даты");
         }
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());

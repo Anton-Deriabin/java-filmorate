@@ -34,18 +34,10 @@ public class FilmController {
                 throw new DuplicatedDataException(messageNameDuplicate);
             }
         }
-        if (film.getDescription().length() > 200) {
-            log.error("Описание длиннее 200 символов при добавлении");
-            throw new ValidationException("Описание не может быть длиннее 200 символов");
-        }
         if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             log.error("Дата выхода раньше 28.12.1895 при добавлении");
             throw new ValidationException("Дата выхода не может быть раньше " +
                     "даты выхода первого в истории фильма");
-        }
-        if (film.getDuration() <= 0) {
-            log.error("Длительность фильма меньше или равна нулю при добавлении");
-            throw new ValidationException("Длительность фильма должна быть больше нуля");
         }
         film.setId(getNextId());
         log.debug("Фильму \"{}\" назначен id = {}", film.getName(), film.getId());
@@ -61,18 +53,10 @@ public class FilmController {
             throw new ValidationException("Id должен быть указан");
 
         }
-        if (newFilm.getDescription().length() > 200) {
-            log.error("Описание к обновлению длиннее 200 символов");
-            throw new ValidationException("Описание не может быть длиннее 200 символов");
-        }
         if (newFilm.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             log.error("Дата выхода к обновлению раньше 28.12.1895");
             throw new ValidationException("Дата выхода не может быть раньше " +
                     "даты выхода первого в истории фильма");
-        }
-        if (newFilm.getDuration() <= 0) {
-            log.error("Длительность к обновлению меньше или равна нулю");
-            throw new ValidationException("Длительность фильма должна быть больше нуля");
         }
         if (films.containsKey(newFilm.getId())) {
             Film oldFilm = films.get(newFilm.getId());
