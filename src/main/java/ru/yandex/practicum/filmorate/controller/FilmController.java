@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -18,7 +19,8 @@ import java.util.Map;
 @RequestMapping("/films")
 public class FilmController {
     private final String messageNameDuplicate = "Это имя уже используется";
-    private final Map<Long, Film> films = new HashMap<>();
+    @Getter
+    protected final Map<Long, Film> films = new HashMap<>();
 
     @GetMapping
     public Collection<Film> findAll() {

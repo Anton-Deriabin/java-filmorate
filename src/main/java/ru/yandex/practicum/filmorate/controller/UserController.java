@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -17,7 +18,8 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
     private final String messageEmailDuplicate = "Этот email уже используется";
-    private final Map<Long, User> users = new HashMap<>();
+    @Getter
+    protected final Map<Long, User> users = new HashMap<>();
 
     @GetMapping
     public Collection<User> findAll() {
@@ -85,4 +87,5 @@ public class UserController {
         log.debug("Cоздали новый id = {} ", currentMaxId);
         return ++currentMaxId;
     }
+
 }
