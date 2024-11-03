@@ -10,4 +10,8 @@ class FilmorateApplicationTests {
 	void contextLoads() {
 	}
 
+	@Test
+	void mainMethodExecutes() {
+		FilmorateApplication.main(new String[] {});
+	}
 }
