@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -36,11 +37,11 @@ public class FilmService {
     }
 
     public Film addLike(Long filmId, Long userId) {
-        User user = userStorage.findById(userId).orElseThrow(() -> new NotFoundException(messageUser));
-        Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException(messageFilm));
+        User user = userStorage.findById(userId).orElseThrow(() -> new ValidationException(messageUser));
+        Film film = filmStorage.findById(filmId).orElseThrow(() -> new ValidationException(messageFilm));
         if (user.getLikedFilms().contains(filmId)) {
             log.error("Попытка поставить фильму лайк пользователем повторно");
-            throw new ValidationException("Пользователь уже поставил лайк этому фильму");
+            throw new DuplicatedDataException("Пользователь уже поставил лайк этому фильму");
         }
         user.getLikedFilms().add(filmId);
         log.debug("В список понравившихся фильмов пользователя с id = {} добавлен фильм \"{}\"",
@@ -58,8 +59,8 @@ public class FilmService {
     }
 
     public Film deleteLike(Long filmId, Long userId) {
-        User user = userStorage.findById(userId).orElseThrow(() -> new NotFoundException(messageUser));
-        Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException(messageFilm));
+        User user = userStorage.findById(userId).orElseThrow(() -> new ValidationException(messageUser));
+        Film film = filmStorage.findById(filmId).orElseThrow(() -> new ValidationException(messageFilm));
         if (user.getLikedFilms().contains(filmId)) {
             user.getLikedFilms().remove(filmId);
             log.debug("Из списка понравившихся фильмов пользователя с id = {} удален фильм \"{}\"",
