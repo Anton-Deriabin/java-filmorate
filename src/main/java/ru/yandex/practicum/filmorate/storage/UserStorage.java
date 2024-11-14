@@ -13,4 +13,8 @@ public interface UserStorage {
     User update(User newUser);
 
     Optional<User> findById(Long id);
+
+    void updateFriends(User user);
+
+    void updateLikes(User user);
 }

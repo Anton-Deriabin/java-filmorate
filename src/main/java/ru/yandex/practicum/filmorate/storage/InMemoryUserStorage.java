@@ -94,4 +94,23 @@ public class InMemoryUserStorage implements UserStorage {
     public Optional<User> findById(Long id) {
         return Optional.ofNullable(users.get(id));
     }
+
+    public void updateFriends(User user) {
+        if (users.containsKey(user.getId())) {
+            User existingUser = users.get(user.getId());
+            existingUser.setFriends(user.getFriends());
+        } else {
+            throw new NotFoundException("Пользователь не найден");
+        }
+    }
+
+    public void updateLikes(User user) {
+        if (users.containsKey(user.getId())) {
+            User existingUser = users.get(user.getId());
+            existingUser.setLikedFilms(user.getLikedFilms());  // Обновляем только список лайков
+            log.debug("Пользователь с id = {} обновлён с новым списком лайков", user.getId());
+        } else {
+            throw new NotFoundException("Пользователь не найден");
+        }
+    }
 }

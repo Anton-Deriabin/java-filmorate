@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -17,6 +18,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserService {
     private final String message = "Пользователь не найден";
+
+    @Autowired
     private final UserStorage userStorage;
 
     public Collection<User> findAll() {
@@ -48,10 +51,10 @@ public class UserService {
         log.debug("В список друзей пользователя с id = {} добавлен пользователь с id = {}",
                 userFriend.getId(),
                 user.getId());
-        userStorage.update(user);
+        userStorage.updateFriends(user);
         log.debug("Пользователь с id = {} с увеличенным количеством друзей обновлен в коллекции пользователей",
                 user.getName());
-        userStorage.update(userFriend);
+        userStorage.updateFriends(userFriend);
         log.debug("Пользователь с id = {} с увеличенным количеством друзей обновлен в коллекции пользователей",
                 userFriend.getName());
         log.info("Пользователь с id = {} добавил в друзья пользователя с id = {}", user.getId(), userFriend.getId());
@@ -75,10 +78,10 @@ public class UserService {
         log.debug("Из списка друзей пользователя с id = {} удален пользователь с id = {}",
                 userNotFriendAnymore.getId(),
                 user.getId());
-        userStorage.update(user);
+        userStorage.updateFriends(user);
         log.debug("Пользователь с id = {} с уменьшенным количеством друзей обновлен в коллекции пользователей",
                 user.getName());
-        userStorage.update(userNotFriendAnymore);
+        userStorage.updateFriends(userNotFriendAnymore);
         log.debug("Пользователь с id = {} с уменьшенным количеством друзей обновлен в коллекции пользователей",
                 userNotFriendAnymore.getId());
         log.info("Пользователь с id = {} удалил из друзей пользователя с id = {}",

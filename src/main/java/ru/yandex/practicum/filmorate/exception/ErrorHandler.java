@@ -30,11 +30,4 @@ public class ErrorHandler {
         log.error("Дублирование данных: ", e);
         return new ErrorResponse("Дублирование данных", e.getMessage());
     }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(final Throwable e) {
-        log.error("Ошибка: ", e);
-        return new ErrorResponse("Ошибка", "Произошла непредвиденная ошибка");
-    }
 }

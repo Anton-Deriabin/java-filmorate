@@ -13,4 +13,6 @@ public interface FilmStorage {
     Film update(Film newFilm);
 
     Optional<Film> findById(Long id);
+
+    void updateLikes(Film film);
 }
