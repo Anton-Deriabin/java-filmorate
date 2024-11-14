@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.controller;
+package ru.yandex.practicum.filmorate.storage;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,10 +14,10 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-public class FilmControllerTest {
+public class InMemoryFilmStorageTest {
 
     @Autowired
-    private FilmController filmController;
+    private InMemoryFilmStorage inMemoryFilmStorage;
 
     @BeforeEach
     public void setUp() {
@@ -28,16 +28,16 @@ public class FilmControllerTest {
         film.setDescription("Description of Test Film");
         film.setReleaseDate(LocalDate.of(2022, 1, 1));
         film.setDuration(120);
-        filmController.create(film);
+        inMemoryFilmStorage.create(film);
     }
 
     private void clearFilms() {
-        filmController.getFilms().clear();
+        inMemoryFilmStorage.getFilms().clear();
     }
 
     @Test
     public void testFindAllFilms() {
-        assertEquals(1, filmController.findAll().size(), "Изначально должен быть один фильм");
+        assertEquals(1, inMemoryFilmStorage.findAll().size(), "Изначально должен быть один фильм");
     }
 
     @Test
@@ -47,9 +47,9 @@ public class FilmControllerTest {
         newFilm.setDescription("Unique Description");
         newFilm.setReleaseDate(LocalDate.of(2023, 1, 1));
         newFilm.setDuration(150);
-        Film createdFilm = filmController.create(newFilm);
+        Film createdFilm = inMemoryFilmStorage.create(newFilm);
         assertNotNull(createdFilm.getId(), "ID нового фильма не должен быть null");
-        assertEquals(2, filmController.findAll().size(), "Должно быть два фильма");
+        assertEquals(2, inMemoryFilmStorage.findAll().size(), "Должно быть два фильма");
         assertEquals("Unique Film", createdFilm.getName(), "Имя должно совпадать");
     }
 
@@ -60,7 +60,7 @@ public class FilmControllerTest {
         duplicateFilm.setDescription("Another Description");
         duplicateFilm.setReleaseDate(LocalDate.of(2021, 1, 1));
         duplicateFilm.setDuration(100);
-        assertThrows(DuplicatedDataException.class, () -> filmController.create(duplicateFilm),
+        assertThrows(DuplicatedDataException.class, () -> inMemoryFilmStorage.create(duplicateFilm),
                 "Ожидается исключение DuplicatedDataException из-за дублирующегося имени");
     }
 
@@ -71,7 +71,7 @@ public class FilmControllerTest {
         invalidFilm.setDescription("Invalid Description");
         invalidFilm.setReleaseDate(LocalDate.of(1890, 1, 1)); // Дата до 28.12.1895
         invalidFilm.setDuration(90);
-        assertThrows(ValidationException.class, () -> filmController.create(invalidFilm),
+        assertThrows(ValidationException.class, () -> inMemoryFilmStorage.create(invalidFilm),
                 "Ожидается исключение ValidationException из-за некорректной даты выхода");
     }
 
@@ -83,7 +83,7 @@ public class FilmControllerTest {
         updatedFilm.setDescription("Updated Description");
         updatedFilm.setReleaseDate(LocalDate.of(2022, 1, 1));
         updatedFilm.setDuration(130);
-        Film result = filmController.update(updatedFilm);
+        Film result = inMemoryFilmStorage.update(updatedFilm);
         assertEquals("Updated Film", result.getName(), "Имя должно быть обновлено");
         assertEquals("Updated Description", result.getDescription(), "Описание должно быть обновлено");
         assertEquals(130, result.getDuration(), "Длительность должна быть обновлена");
@@ -97,7 +97,7 @@ public class FilmControllerTest {
         nonExistingFilm.setDescription("Non-Existing Description");
         nonExistingFilm.setReleaseDate(LocalDate.of(2020, 1, 1));
         nonExistingFilm.setDuration(100);
-        assertThrows(NotFoundException.class, () -> filmController.update(nonExistingFilm),
+        assertThrows(NotFoundException.class, () -> inMemoryFilmStorage.update(nonExistingFilm),
                 "Ожидается исключение NotFoundException при попытке обновления несуществующего фильма");
     }
 
@@ -108,14 +108,14 @@ public class FilmControllerTest {
         anotherFilm.setDescription("Another Description");
         anotherFilm.setReleaseDate(LocalDate.of(2023, 2, 1));
         anotherFilm.setDuration(140);
-        filmController.create(anotherFilm);
+        inMemoryFilmStorage.create(anotherFilm);
         Film updatedFilm = new Film();
         updatedFilm.setId(1L);
         updatedFilm.setName("Another Film"); // Дублируемое имя
         updatedFilm.setDescription("Updated Description");
         updatedFilm.setReleaseDate(LocalDate.of(2022, 1, 1));
         updatedFilm.setDuration(130);
-        assertThrows(DuplicatedDataException.class, () -> filmController.update(updatedFilm),
+        assertThrows(DuplicatedDataException.class, () -> inMemoryFilmStorage.update(updatedFilm),
                 "Ожидается исключение DuplicatedDataException из-за дублирующегося имени");
     }
 }

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.controller;
+package ru.yandex.practicum.filmorate.storage;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,10 +13,10 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-public class UserControllerTest {
+public class InMemoryUserStorageTest {
 
     @Autowired
-    private UserController userController;
+    private InMemoryUserStorage inMemoryUserStorage;
 
     @BeforeEach
     public void setUp() {
@@ -27,16 +27,16 @@ public class UserControllerTest {
         user.setLogin("testlogin");
         user.setName("Test User");
         user.setBirthday(LocalDate.of(2000, 1, 1));
-        userController.create(user);
+        inMemoryUserStorage.create(user);
     }
 
     private void clearUsers() {
-        userController.getUsers().clear();
+        inMemoryUserStorage.getUsers().clear();
     }
 
     @Test
     public void testFindAllUsers() {
-        assertEquals(1, userController.findAll().size(), "Изначально должен быть один пользователь");
+        assertEquals(1, inMemoryUserStorage.findAll().size(), "Изначально должен быть один пользователь");
     }
 
     @Test
@@ -46,9 +46,9 @@ public class UserControllerTest {
         newUser.setLogin("uniqueLogin");
         newUser.setName("Unique User");
         newUser.setBirthday(LocalDate.of(1990, 2, 15));
-        User createdUser = userController.create(newUser);
+        User createdUser = inMemoryUserStorage.create(newUser);
         assertNotNull(createdUser.getId(), "ID нового пользователя не должен быть null");
-        assertEquals(2, userController.findAll().size(), "Должно быть два пользователя");
+        assertEquals(2, inMemoryUserStorage.findAll().size(), "Должно быть два пользователя");
         assertEquals("unique@example.com", createdUser.getEmail(), "Email должен совпадать");
     }
 
@@ -59,7 +59,7 @@ public class UserControllerTest {
         duplicateEmailUser.setLogin("duplicateLogin");
         duplicateEmailUser.setName("Duplicate User");
         duplicateEmailUser.setBirthday(LocalDate.of(1995, 3, 10));
-        assertThrows(DuplicatedDataException.class, () -> userController.create(duplicateEmailUser),
+        assertThrows(DuplicatedDataException.class, () -> inMemoryUserStorage.create(duplicateEmailUser),
                 "Ожидается исключение DuplicatedDataException из-за дублирующегося email");
     }
 
@@ -69,7 +69,7 @@ public class UserControllerTest {
         noNameUser.setEmail("noname@example.com");
         noNameUser.setLogin("noNameLogin");
         noNameUser.setBirthday(LocalDate.of(1993, 5, 25));
-        User createdUser = userController.create(noNameUser);
+        User createdUser = inMemoryUserStorage.create(noNameUser);
         assertEquals(noNameUser.getLogin(), createdUser.getName(), "Имя должно быть установлено равным логину");
     }
 
@@ -81,7 +81,7 @@ public class UserControllerTest {
         updatedUser.setLogin("updatedLogin");
         updatedUser.setName("Updated User");
         updatedUser.setBirthday(LocalDate.of(2000, 1, 1));
-        User result = userController.update(updatedUser);
+        User result = inMemoryUserStorage.update(updatedUser);
         assertEquals("updated@example.com", result.getEmail(), "Email должен быть обновлен");
         assertEquals("Updated User", result.getName(), "Имя должно быть обновлено");
         assertEquals("updatedLogin", result.getLogin(), "Логин должен быть обновлен");
@@ -95,7 +95,7 @@ public class UserControllerTest {
         nonExistingUser.setLogin("nonexistingLogin");
         nonExistingUser.setName("Non-Existing User");
         nonExistingUser.setBirthday(LocalDate.of(1995, 7, 20));
-        assertThrows(NotFoundException.class, () -> userController.update(nonExistingUser),
+        assertThrows(NotFoundException.class, () -> inMemoryUserStorage.update(nonExistingUser),
                 "Ожидается исключение NotFoundException при попытке обновления несуществующего пользователя");
     }
 
@@ -106,14 +106,14 @@ public class UserControllerTest {
         anotherUser.setLogin("anotherLogin");
         anotherUser.setName("Another User");
         anotherUser.setBirthday(LocalDate.of(1980, 6, 30));
-        userController.create(anotherUser);
+        inMemoryUserStorage.create(anotherUser);
         User updatedUser = new User();
         updatedUser.setId(1L);
         updatedUser.setEmail("another@example.com");
         updatedUser.setLogin("updatedLogin");
         updatedUser.setName("Updated User");
         updatedUser.setBirthday(LocalDate.of(2000, 1, 1));
-        assertThrows(DuplicatedDataException.class, () -> userController.update(updatedUser),
+        assertThrows(DuplicatedDataException.class, () -> inMemoryUserStorage.update(updatedUser),
                 "Ожидается исключение DuplicatedDataException из-за дублирующегося email");
     }
 }

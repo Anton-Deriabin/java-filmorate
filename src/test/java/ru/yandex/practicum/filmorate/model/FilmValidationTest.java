@@ -48,7 +48,7 @@ public class FilmValidationTest {
     @Test
     void whenDescriptionIsTooLong_thenValidationFails() {
         film.setName("Valid Name");
-        film.setDescription("A".repeat(201)); // Длина больше 200 символов
+        film.setDescription("A".repeat(201));
         film.setReleaseDate(LocalDate.of(2000, 1, 1));
         film.setDuration(120);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
@@ -59,7 +59,7 @@ public class FilmValidationTest {
     void whenReleaseDateIsNull_thenValidationPasses() {
         film.setName("Valid Name");
         film.setDescription("Valid description");
-        film.setReleaseDate(null); // Не проверяется по спецификации
+        film.setReleaseDate(null);
         film.setDuration(120);
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
         assertTrue(violations.isEmpty());
