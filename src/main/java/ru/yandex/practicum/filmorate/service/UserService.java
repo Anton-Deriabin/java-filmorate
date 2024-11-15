@@ -66,10 +66,6 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException(message));
         User userNotFriendAnymore = userStorage.findById(notFriendAnymoreId)
                 .orElseThrow(() -> new NotFoundException(message));
-        if (!user.getFriends().contains(notFriendAnymoreId)) {
-            log.error("Попытка удалить из друзей пользователя не являющегося другом");
-            throw new ValidationException("Пользователь не является другом");
-        }
         user.getFriends().remove(notFriendAnymoreId);
         log.debug("Из списка друзей пользователя с id = {} удален пользователь с id = {}",
                 user.getId(),
