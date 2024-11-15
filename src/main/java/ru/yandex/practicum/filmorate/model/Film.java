@@ -25,4 +25,15 @@ public class Film {
     @NotNull
     @Positive(message = "Продолжительность должна быть положительным числом")
     Integer duration;
+    Long like = 0L;
+
+    public void incrementLikes() {
+        like++;
+    }
+
+    public void decrementLikes() {
+        if (like > 0) {
+            like--;
+        }
+    }
 }

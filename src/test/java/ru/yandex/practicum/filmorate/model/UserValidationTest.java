@@ -92,7 +92,7 @@ public class UserValidationTest {
     void whenBirthdayIsInFuture_thenValidationFails() {
         user.setEmail("valid.email@example.com");
         user.setLogin("validLogin");
-        user.setBirthday(LocalDate.now().plusDays(1)); // Устанавливаем дату рождения в будущее
+        user.setBirthday(LocalDate.now().plusDays(1));
         Set<ConstraintViolation<User>> violations = validator.validate(user);
         assertFalse(violations.isEmpty());
     }
