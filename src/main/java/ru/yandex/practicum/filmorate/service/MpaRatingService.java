@@ -25,6 +25,6 @@ public class MpaRatingService {
     public MpaRatingDto findById(Long id) {
         return mpaRatingRepository.findById(id)
                 .map(MpaRatingMapper::mapToMpaRatingDto)
-                .orElseThrow(() -> new NotFoundException("Жанр с id=" + id + " не найден"));
+                .orElseThrow(() -> new NotFoundException(String.format("Рейтинг с id=%d не найден", id)));
     }
 }

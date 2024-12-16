@@ -12,44 +12,49 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class UserController {
+    private final String usersPath = "/users";
+    private final String usersIdPath = "/users/{id}";
+    private final String friendsIdPath = "/users/{id}/friends/{friend-id}";
+    private final String friendsPath = "/users/{id}/friends";
+    private final String commonFriendsPath = "/users/{id}/friends/common/{other-id}";
     private final UserService userService;
 
-    @GetMapping("/users")
+    @GetMapping(usersPath)
     public List<UserDto> findAll() {
         return userService.findAll();
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping(usersIdPath)
     public UserDto findUser(@PathVariable Long id) {
         return userService.findById(id);
     }
 
-    @PostMapping("/users")
+    @PostMapping(usersPath)
     public UserDto create(@Valid @RequestBody User user) {
         return userService.create(user);
     }
 
-    @PutMapping("/users")
+    @PutMapping(usersPath)
     public UserDto update(@Valid @RequestBody User user) {
         return userService.update(user);
     }
 
-    @PutMapping("/users/{id}/friends/{friend-id}")
+    @PutMapping(friendsIdPath)
     public void addFriend(@PathVariable Long id, @PathVariable("friend-id") Long friendId) {
         userService.addFriend(friendId, id);
     }
 
-    @DeleteMapping("/users/{id}/friends/{friend-id}")
+    @DeleteMapping(friendsIdPath)
     public void deleteFriend(@PathVariable Long id, @PathVariable("friend-id") Long friendId) {
         userService.deleteFriend(friendId, id);
     }
 
-    @GetMapping("/users/{id}/friends")
+    @GetMapping(friendsPath)
     public List<UserDto> getFriends(@PathVariable Long id) {
         return userService.getFriends(id);
     }
 
-    @GetMapping("/users/{id}/friends/common/{other-id}")
+    @GetMapping(commonFriendsPath)
     public List<UserDto> getCommonFriends(@PathVariable Long id, @PathVariable("other-id") Long otherId) {
         return userService.getCommonFriends(id, otherId);
     }

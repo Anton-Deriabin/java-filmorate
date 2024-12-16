@@ -24,7 +24,7 @@ class MpaRatingRepositoryTest {
     @Test
     void findAll_ReturnsListOfRatings() {
         List<MpaRating> ratings = mpaRatingRepository.findAll();
-        assertThat(ratings).hasSize(5); // Убедитесь, что все рейтинги из data.sql загружены.
+        assertThat(ratings).hasSize(5);
     }
 
     @Test

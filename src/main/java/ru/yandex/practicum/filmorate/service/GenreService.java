@@ -25,6 +25,6 @@ public class GenreService {
     public GenreDto findById(Long id) {
         return genreRepository.findById(id)
                 .map(GenreMapper::mapToGenreDto)
-                .orElseThrow(() -> new NotFoundException("Жанр с id=" + id + " не найден"));
+                .orElseThrow(() -> new NotFoundException(String.format("Жанр с id=%d не найден", id)));
     }
 }

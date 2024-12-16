@@ -31,7 +31,7 @@ public class UserService {
     public UserDto findById(Long id) {
         return userRepository.findById(id)
                 .map(UserMapper::mapToUserDto)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id=" + id + " не найден"));
+                .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id=%d не найден", id)));
     }
 
     public UserDto create(User user) {
@@ -47,7 +47,7 @@ public class UserService {
             throw new ValidationException("Id должен быть указан");
         }
         if (findById(newUser.getId()) == null) {
-            throw new NotFoundException("Пользователь с id=" + newUser.getId() + " не найден");
+            throw new NotFoundException(String.format("Пользователь с id=%d не найден", newUser.getId()));
         }
         checkName(newUser);
         return UserMapper.mapToUserDto(userRepository.update(newUser));
@@ -55,7 +55,7 @@ public class UserService {
 
     public List<UserDto> getFriends(Long receiver) {
         if (userRepository.findById(receiver).isEmpty()) {
-            throw new NotFoundException("Пользователь с id=" + receiver + " не найден");
+            throw new NotFoundException(String.format("Пользователь с id=%d не найден", receiver));
         }
         return userRepository.getFriends(receiver)
                 .stream()

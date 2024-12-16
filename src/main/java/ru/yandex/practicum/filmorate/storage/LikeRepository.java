@@ -32,8 +32,8 @@ public class LikeRepository extends BaseRepository<Like> {
     public void addLike(Long filmId, Long userId) {
         Integer count = jdbc.queryForObject(CHECK_REQUEST_QUERY, Integer.class, filmId, userId);
         if (count != 0) {
-            throw new DuplicatedDataException("Фильму с id = " + filmId + ", уже поставлен лайк пользователем " +
-                    "с id = " + userId);
+            throw new DuplicatedDataException(String.format("Фильму с id = %d, уже поставлен лайк пользователем " +
+                    "с id = %d", filmId, userId));
         }
         insert(INSERT_QUERY, filmId, userId);
     }
@@ -41,8 +41,8 @@ public class LikeRepository extends BaseRepository<Like> {
     public void deleteLike(Long filmId, Long userId) {
         Integer count = jdbc.queryForObject(CHECK_REQUEST_QUERY, Integer.class, filmId, userId);
         if (count == 0) {
-            throw new DuplicatedDataException("Фильму с id = " + filmId + ", еще не поставлен лайк пользователем " +
-                    "с id = " + userId);
+            throw new DuplicatedDataException(String.format("Фильму с id = %d, еще не поставлен поставлен лайк " +
+                    "пользователем с id = %d", filmId, userId));
         }
         delete(DELETE_QUERY, filmId, userId);
     }

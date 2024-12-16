@@ -91,7 +91,9 @@ public class UserRepository extends BaseRepository<User> {
     private void checkEmail(User user) {
         Integer count = jdbc.queryForObject(CHECK_EMAIL_QUERY, Integer.class, user.getEmail());
         if (count != null && count > 0) {
-            throw new DuplicatedDataException("Этот email уже используется: " + user.getEmail());
+            throw new DuplicatedDataException(
+                    String.format("Этот email уже используется: %s", user.getEmail())
+            );
         }
     }
 }

@@ -13,6 +13,7 @@ import java.util.Optional;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> {
+    private final String notFound = "Фильм не найден после создания";
     private static final String FIND_ALL_QUERY =
             "SELECT f.*, r.name AS rating_name " +
             "FROM films f " +
@@ -73,7 +74,7 @@ public class FilmRepository extends BaseRepository<Film> {
         );
         film.setId(filmId);
         saveGenres(film);
-        return findById(filmId).orElseThrow(() -> new NotFoundException("Фильм не найден после создания"));
+        return findById(filmId).orElseThrow(() -> new NotFoundException(notFound));
     }
 
     public Film update(Film film) {
@@ -91,7 +92,7 @@ public class FilmRepository extends BaseRepository<Film> {
         );
         jdbc.update(DELETE_GENRES_BY_FILM_ID, film.getId());
         saveGenres(film);
-        return findById(film.getId()).orElseThrow(() -> new NotFoundException("Фильм не найден после обновления"));
+        return findById(film.getId()).orElseThrow(() -> new NotFoundException(notFound));
     }
 
     private void saveGenres(Film film) {
@@ -106,7 +107,9 @@ public class FilmRepository extends BaseRepository<Film> {
     private void checkRating(Film film) {
         Integer count = jdbc.queryForObject(CHECK_RATING_QUERY, Integer.class, film.getMpaRating().getId());
         if (count == 0) {
-            throw new ValidationException("Рейтинг с таким id: " + film.getMpaRating().getId() + " - отсутствует");
+            throw new ValidationException(
+                    String.format("Рейтинг с таким id: %d - отсутствует", film.getMpaRating().getId())
+            );
         }
     }
 
@@ -114,7 +117,9 @@ public class FilmRepository extends BaseRepository<Film> {
         for (Genre genre : film.getGenres()) {
             Integer count = jdbc.queryForObject(CHECK_GENRE_QUERY, Integer.class, genre.getId());
             if (count == 0) {
-                throw new ValidationException("Жанр с таким id: " + genre.getId() + " - отсутствует");
+                throw new ValidationException(
+                        String.format("Жанр с таким id: %d - отсутствует", genre.getId())
+                );
             }
         }
     }
@@ -122,7 +127,9 @@ public class FilmRepository extends BaseRepository<Film> {
     void checkId(Film film) {
         Integer count = jdbc.queryForObject(CHECK_ID_QUERY, Integer.class, film.getId());
         if (count == 0) {
-            throw new NotFoundException("Фильм с таким id: " + film.getId() + " - отсутствует");
+            throw new NotFoundException(
+                    String.format("Фильм с таким id: %d - отсутствует", film.getId())
+            );
         }
     }
 }

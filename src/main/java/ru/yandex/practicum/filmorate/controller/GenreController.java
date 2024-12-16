@@ -12,14 +12,16 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class GenreController {
+    private final String genresPath = "/genres";
+    private final String genresIdPath = "/genres/{id}";
     private final GenreService genreService;
 
-    @GetMapping("/genres")
+    @GetMapping(genresPath)
     public List<GenreDto> findAll() {
         return genreService.findAll();
     }
 
-    @GetMapping("/genres/{id}")
+    @GetMapping(genresIdPath)
     public GenreDto findFilm(@PathVariable Long id) {
         return genreService.findById(id);
     }

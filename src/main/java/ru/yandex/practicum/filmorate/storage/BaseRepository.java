@@ -14,6 +14,7 @@ import java.util.Optional;
 
 @RequiredArgsConstructor
 public class BaseRepository<T> {
+    private final String serverError = "Не удалось сохранить данные";
     protected final JdbcTemplate jdbc;
     protected final RowMapper<T> mapper;
     private final Class<T> entityType;
@@ -50,14 +51,14 @@ public class BaseRepository<T> {
         if (id != null) {
             return id;
         } else {
-            throw new InternalServerException("Не удалось сохранить данные");
+            throw new InternalServerException(serverError);
         }
     }
 
     protected void update(String query, Object... params) {
         int rowsUpdated = jdbc.update(query, params);
         if (rowsUpdated == 0) {
-            throw new InternalServerException("Не удалось обновить данные");
+            throw new InternalServerException(serverError);
         }
     }
 }

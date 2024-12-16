@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Friendship;
 
 @Repository
 public class FriendshipRepository extends BaseRepository<Friendship> {
+    private final String notFound = "Один или оба пользователя не существуют";
     private static final String INSERT_QUERY =
             "INSERT INTO friends(sender, receiver) " +
             "VALUES (?, ?)";
@@ -29,7 +30,7 @@ public class FriendshipRepository extends BaseRepository<Friendship> {
 
     public void addFriend(Long sender, Long receiver) {
         if (!userExists(sender) || !userExists(receiver)) {
-            throw new NotFoundException("Один или оба пользователя не существуют");
+            throw new NotFoundException(notFound);
         }
         Integer count = jdbc.queryForObject(CHECK_REQUEST_QUERY, Integer.class, sender, receiver);
         if (count != null && count > 0) {
@@ -41,7 +42,7 @@ public class FriendshipRepository extends BaseRepository<Friendship> {
 
     public void deleteFriend(Long sender, Long receiver) {
         if (!userExists(sender) || !userExists(receiver)) {
-            throw new NotFoundException("Один или оба пользователя не существуют");
+            throw new NotFoundException(notFound);
         }
         delete(DELETE_QUERY, sender, receiver);
     }
