@@ -24,7 +24,7 @@ class GenreRepositoryTest {
     @Test
     void findAll_ReturnsListOfGenres() {
         List<Genre> genres = genreRepository.findAll();
-        assertThat(genres).hasSize(6); // Убедитесь, что все жанры из data.sql загружены.
+        assertThat(genres).hasSize(6);
     }
 
     @Test

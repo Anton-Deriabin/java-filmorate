@@ -28,7 +28,6 @@ class FriendshipRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        // Создаём двух пользователей
         User user1 = new User();
         user1.setEmail("user1@example.com");
         user1.setName("User One");

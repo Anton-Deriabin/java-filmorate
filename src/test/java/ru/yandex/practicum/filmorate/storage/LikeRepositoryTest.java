@@ -33,7 +33,6 @@ class LikeRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        // Создание пользователя
         User user = new User();
         user.setEmail("testuser@example.com");
         user.setName("Test User");
@@ -42,7 +41,6 @@ class LikeRepositoryTest {
         user = userRepository.create(user);
         userId = user.getId();
 
-        // Создание фильма
         Film film = new Film();
         film.setName("Test Film");
         film.setDescription("Test Film Description");
