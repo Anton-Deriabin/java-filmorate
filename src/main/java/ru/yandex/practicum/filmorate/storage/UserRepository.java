@@ -4,8 +4,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -58,9 +56,6 @@ public class UserRepository extends BaseRepository<User> {
 
     public User create(User user) {
         checkEmail(user);
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
         long id = insert(
                 INSERT_QUERY,
                 user.getEmail(),
@@ -73,14 +68,7 @@ public class UserRepository extends BaseRepository<User> {
     }
 
     public User update(User user) {
-        if (user.getId() == null) {
-            throw new ValidationException("Id должен быть указан");
-        }
         checkEmail(user);
-        Optional<User> existingUser = findById(user.getId());
-        if (existingUser.isEmpty()) {
-            throw new NotFoundException("Пользователь с id=" + user.getId() + " не найден");
-        }
         update(
                 UPDATE_QUERY,
                 user.getEmail(),

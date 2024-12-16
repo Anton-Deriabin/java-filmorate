@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,7 +61,6 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     public Film create(Film film) {
-        checkReleaseDate(film);
         checkRating(film);
         checkGenre(film);
         long filmId = insert(
@@ -80,7 +78,6 @@ public class FilmRepository extends BaseRepository<Film> {
 
     public Film update(Film film) {
         checkId(film);
-        checkReleaseDate(film);
         checkRating(film);
         checkGenre(film);
         update(
@@ -103,13 +100,6 @@ public class FilmRepository extends BaseRepository<Film> {
         }
         for (Genre genre : film.getGenres()) {
             jdbc.update(INSERT_IN_FILM_GENRES_QUERY, film.getId(), genre.getId());
-        }
-    }
-
-    private void checkReleaseDate(Film film) {
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException("Дата выхода не может быть раньше " +
-                    "28.12.1895 - даты выхода первого в истории фильма");
         }
     }
 
@@ -136,4 +126,3 @@ public class FilmRepository extends BaseRepository<Film> {
         }
     }
 }
-

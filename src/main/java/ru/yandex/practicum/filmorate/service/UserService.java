@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendshipRepository;
@@ -34,11 +35,20 @@ public class UserService {
     }
 
     public UserDto create(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
         checkName(user);
         return UserMapper.mapToUserDto(userRepository.create(user));
     }
 
     public UserDto update(User newUser) {
+        if (newUser.getId() == null) {
+            throw new ValidationException("Id должен быть указан");
+        }
+        if (findById(newUser.getId()) == null) {
+            throw new NotFoundException("Пользователь с id=" + newUser.getId() + " не найден");
+        }
         checkName(newUser);
         return UserMapper.mapToUserDto(userRepository.update(newUser));
     }
@@ -74,4 +84,3 @@ public class UserService {
         }
     }
 }
-
