@@ -1,3 +1,4 @@
+-- Наполнение таблицы ratings
 MERGE INTO ratings (id, name) KEY(id)
 VALUES
 (1, 'G'),
@@ -6,6 +7,7 @@ VALUES
 (4, 'R'),
 (5, 'NC-17');
 
+-- Наполнение таблицы genres
 MERGE INTO genres (id, name) KEY(id)
 VALUES
 (1, 'Комедия'),
