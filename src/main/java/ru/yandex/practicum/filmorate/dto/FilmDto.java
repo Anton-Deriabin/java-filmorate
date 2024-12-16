@@ -1,40 +1,41 @@
-package ru.yandex.practicum.filmorate.model;
+package ru.yandex.practicum.filmorate.dto;
 
-import jakarta.validation.constraints.*;
-import lombok.AccessLevel;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.FieldDefaults;
+import ru.yandex.practicum.filmorate.model.Like;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@EqualsAndHashCode(of = { "name" })
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class Film {
-    Long id;
+public class FilmDto {
+    private Long id;
 
     @NotNull(message = "Имя фильма не может быть null")
     @NotBlank(message = "Имя фильма не может быть пустым")
-    String name;
+    private String name;
 
     @Size(max = 200, message = "Описание не может быть длиннее 200 символов")
-    String description;
+    private String description;
 
     @NotNull(message = "Дата релиза не может быть пустой")
-    LocalDate releaseDate;
+    private LocalDate releaseDate;
 
     @NotNull(message = "Продолжительность не может быть пустой")
     @Positive(message = "Продолжительность должна быть положительным числом")
-    Integer duration;
+    private Integer duration;
 
     @NotNull(message = "MPA рейтинг не может быть пустым")
-    MpaRating mpaRating;
+    private MpaRatingDto mpa;
 
-    Set<Genre> genres = new HashSet<>();
+    private Set<GenreDto> genres;
 
     private Set<Like> likes = new HashSet<>();
 }
+
+
 
