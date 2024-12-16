@@ -1,93 +1,98 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Like;
+import ru.yandex.practicum.filmorate.storage.FilmRepository;
+import ru.yandex.practicum.filmorate.storage.GenreRepository;
+import ru.yandex.practicum.filmorate.storage.LikeRepository;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
+import java.util.*;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class FilmService {
-    private final String messageUser = "Пользователь не найден";
-    private final String messageFilm = "Фильм не найден";
-    private final FilmStorage filmStorage;
-    private final UserStorage userStorage;
+    private final FilmRepository filmRepository;
+    private final LikeRepository likeRepository;
+    private final GenreRepository genreRepository;
 
-    public Collection<Film> findAll() {
-        return filmStorage.findAll();
+    public FilmService(FilmRepository filmRepository, LikeRepository likeRepository, GenreRepository genreRepository) {
+        this.filmRepository = filmRepository;
+        this.likeRepository = likeRepository;
+        this.genreRepository = genreRepository;
     }
 
-    public Film create(Film film) {
-        return filmStorage.create(film);
+    public List<FilmDto> findAll() {
+        List<Film> films = filmRepository.findAll();
+        Map<Long, Set<Genre>> genresByFilm = genreRepository.findGenresForFilms(
+                films.stream().map(Film::getId).toList()
+        );
+        films.forEach(film -> film.setGenres(genresByFilm.getOrDefault(film.getId(), new LinkedHashSet<>())));
+        return films.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
     }
 
-    public Film update(Film newFilm) {
-        return filmStorage.update(newFilm);
-    }
-
-    public Film addLike(Long filmId, Long userId) {
-        User user = userStorage.findById(userId).orElseThrow(() -> new NotFoundException(messageUser));
-        Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException(messageFilm));
-        if (user.getLikedFilms().contains(filmId)) {
-            log.error("Попытка поставить фильму лайк пользователем повторно");
-            throw new DuplicatedDataException("Пользователь уже поставил лайк этому фильму");
+    public Optional<FilmDto> findById(Long id) {
+        Optional<Film> filmOptional = filmRepository.findById(id);
+        if (filmOptional.isPresent()) {
+            Film film = filmOptional.get();
+            Map<Long, Set<Genre>> genresByFilm = genreRepository.findGenresForFilms(List.of(film.getId()));
+            film.setGenres(genresByFilm.getOrDefault(film.getId(), new LinkedHashSet<>()));
+            return Optional.of(FilmMapper.mapToFilmDto(film));
         }
-        user.getLikedFilms().add(filmId);
-        log.debug("В список понравившихся фильмов пользователя с id = {} добавлен фильм \"{}\"",
-                film.getId(),
-                film.getName());
-        film.incrementLikes();
-        log.debug("Счетчик лайков у фильма \"{}\" увеличен на 1", film.getName());
-        filmStorage.updateLikes(film);
-        userStorage.updateLikes(user);
-        log.info("Фильму \"{}\" поставлен лайк пользователем с id = {}", film.getName(), user.getId());
-        return film;
+        return Optional.empty();
     }
 
-    public Film deleteLike(Long filmId, Long userId) {
-        User user = userStorage.findById(userId).orElseThrow(() -> new NotFoundException(messageUser));
-        Film film = filmStorage.findById(filmId).orElseThrow(() -> new NotFoundException(messageFilm));
-        if (user.getLikedFilms().contains(filmId)) {
-            user.getLikedFilms().remove(filmId);
-            log.debug("Из списка понравившихся фильмов пользователя с id = {} удален фильм \"{}\"",
-                    film.getId(),
-                    film.getName());
-            film.decrementLikes();
-            log.debug("Счетчик лайков у фильма \"{}\" уменьшен на 1", film.getName());
-            filmStorage.updateLikes(film);
-            userStorage.updateLikes(user);
-            log.info("Пользователем с id = {} был удален лайк фильму \"{}\"", user.getName(), film.getName());
-        } else {
-            log.error("Попытка удалить лайк фильму, который не был поставлен");
-            throw new ValidationException("Пользователь не ставил лайк этому фильму");
-        }
-        return film;
+    public FilmDto create(Film film) {
+        checkReleaseDate(film);
+        Film createdFilm = filmRepository.create(film);
+        Map<Long, Set<Genre>> genresByFilm = genreRepository.findGenresForFilms(List.of(createdFilm.getId()));
+        createdFilm.setGenres(genresByFilm.getOrDefault(createdFilm.getId(), new LinkedHashSet<>()));
+        return FilmMapper.mapToFilmDto(createdFilm);
     }
 
-    public List<Film> getPopularFilms(int count) {
-        List<Film> popularFilms = filmStorage
-                .findAll()
-                .stream()
-                .sorted((film1, film2) -> Long.compare(film2.getLike(), film1.getLike()))
+    public FilmDto update(Film film) {
+        checkReleaseDate(film);
+        Film updatedFilm = filmRepository.update(film);
+        Map<Long, Set<Genre>> genresByFilm = genreRepository.findGenresForFilms(List.of(updatedFilm.getId()));
+        updatedFilm.setGenres(genresByFilm.getOrDefault(updatedFilm.getId(), new LinkedHashSet<>()));
+        return FilmMapper.mapToFilmDto(updatedFilm);
+    }
+
+    public void addLike(Long filmId, Long userId) {
+        likeRepository.addLike(filmId, userId);
+    }
+
+    public void deleteLike(Long filmId, Long userId) {
+        likeRepository.deleteLike(filmId, userId);
+    }
+
+    public List<FilmDto> getPopularFilms(int count) {
+        List<Film> films = filmRepository.findAll();
+        Map<Long, Set<Genre>> genresByFilm = genreRepository.findGenresForFilms(
+                films.stream().map(Film::getId).toList()
+        );
+        films.forEach(film -> film.setGenres(genresByFilm.getOrDefault(film.getId(), new LinkedHashSet<>())));
+        films.forEach(film -> {
+            List<Like> likes = likeRepository.findLikesByFilmId(film.getId());
+            film.setLikes(new HashSet<>(likes));
+        });
+        return films.stream()
+                .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
                 .limit(count)
-                .collect(Collectors.toList());
-        log.debug("Получена коллекция фильмов начиная с 1 и до {} - включительно и записана в переменную", count);
-        if (popularFilms.isEmpty()) {
-            log.error("Попытка получить пустой список популярных фильмов");
-            throw new NotFoundException("Список популярных фильмов пуст");
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
+    private void checkReleaseDate(Film film) {
+        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+            throw new ValidationException("Дата выхода не может быть раньше " +
+                    "28.12.1895 - даты выхода первого в истории фильма");
         }
-        log.info("Пользователем был получен список популярных фильмов  начиная с 1 и до {} - включительно", count);
-        return popularFilms;
     }
 }
