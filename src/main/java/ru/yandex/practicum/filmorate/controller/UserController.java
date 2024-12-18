@@ -10,16 +10,16 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import java.util.List;
 
 @RestController
+@RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
-    private final String usersPath = "/users";
-    private final String usersIdPath = "/users/{id}";
-    private final String friendsIdPath = "/users/{id}/friends/{friend-id}";
-    private final String friendsPath = "/users/{id}/friends";
-    private final String commonFriendsPath = "/users/{id}/friends/common/{other-id}";
+    private final String usersIdPath = "/{id}";
+    private final String friendsIdPath = "/{id}/friends/{friend-id}";
+    private final String friendsPath = "/{id}/friends";
+    private final String commonFriendsPath = "/{id}/friends/common/{other-id}";
     private final UserService userService;
 
-    @GetMapping(usersPath)
+    @GetMapping()
     public List<UserDto> findAll() {
         return userService.findAll();
     }
@@ -29,12 +29,12 @@ public class UserController {
         return userService.findById(id);
     }
 
-    @PostMapping(usersPath)
+    @PostMapping()
     public UserDto create(@Valid @RequestBody User user) {
         return userService.create(user);
     }
 
-    @PutMapping(usersPath)
+    @PutMapping()
     public UserDto update(@Valid @RequestBody User user) {
         return userService.update(user);
     }

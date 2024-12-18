@@ -11,15 +11,15 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
-    private final String filmsPath = "/films";
-    private final String filmsIdPath = "/films/{id}";
-    private final String likePath = "/films/{id}/like/{user-id}";
-    private final String popularPath = "/films/popular";
+    private final String filmsIdPath = "/{id}";
+    private final String likePath = "/{id}/like/{user-id}";
+    private final String popularPath = "/popular";
     private final FilmService filmService;
 
-    @GetMapping(filmsPath)
+    @GetMapping
     public List<FilmDto> findAll() {
         return filmService.findAll();
     }
@@ -29,12 +29,12 @@ public class FilmController {
         return filmService.findById(id);
     }
 
-    @PostMapping(filmsPath)
+    @PostMapping()
     public FilmDto create(@Valid @RequestBody FilmDto filmDto) {
         return filmService.create(FilmMapper.mapToFilm(filmDto));
     }
 
-    @PutMapping(filmsPath)
+    @PutMapping()
     public FilmDto update(@Valid @RequestBody FilmDto filmDto) {
         return filmService.update(FilmMapper.mapToFilm(filmDto));
     }
