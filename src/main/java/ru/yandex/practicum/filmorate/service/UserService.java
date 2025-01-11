@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -9,6 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendshipRepository;
 import ru.yandex.practicum.filmorate.storage.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -76,6 +79,10 @@ public class UserService {
                 .stream()
                 .map(UserMapper::mapToUserDto)
                 .toList();
+    }
+
+    public List<FilmDto> getRecommendationsForUser(Long userId) {
+        return new ArrayList<>();
     }
 
     private void checkName(User user) {
