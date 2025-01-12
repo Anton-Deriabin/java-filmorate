@@ -1,8 +1,9 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
-import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import java.util.List;
@@ -26,18 +27,17 @@ public class ReviewController {
 
     @GetMapping("/{id}")
     public ReviewDto findReview(@PathVariable Long id) {
-        return reviewService.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Отзыв с id=" + id + " не найден"));
+        return reviewService.findById(id);
     }
 
     @PostMapping
-    public ReviewDto create(@RequestBody Review review) {
-        return reviewService.create(review);
+    public ReviewDto create(@Valid @RequestBody ReviewDto reviewDto) {
+        return reviewService.create(ReviewMapper.mapToReview(reviewDto));
     }
 
     @PutMapping
-    public ReviewDto update(@RequestBody Review review) {
-        return reviewService.update(review);
+    public ReviewDto update(@Valid @RequestBody ReviewDto reviewDto) {
+        return reviewService.update(ReviewMapper.mapToReview(reviewDto));
     }
 
     @DeleteMapping("/{id}")

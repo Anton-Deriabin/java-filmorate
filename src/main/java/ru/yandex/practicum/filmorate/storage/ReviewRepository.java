@@ -14,10 +14,9 @@ public class ReviewRepository extends BaseRepository<Review> {
     private final String notFound = "Отзыв с таким id - не найден";
     private static final String FIND_ALL_QUERY =
             "SELECT * " +
-            "FROM reviews " +
-            "WHERE film_id = ?";
+            "FROM reviews ";
     private static final String FIND_BY_ID_QUERY =
-            "SELECT *, " +
+            "SELECT * " +
             "FROM reviews " +
             "WHERE id = ?";
     private static final String INSERT_QUERY =
@@ -27,12 +26,24 @@ public class ReviewRepository extends BaseRepository<Review> {
             "UPDATE reviews " +
             "SET content = ?, is_positive = ? " +
             "WHERE id = ?";
+    private static final String UPDATE_USEFUL_QUERY =
+            "UPDATE reviews " +
+            "SET useful = useful + ? " +
+            "WHERE id = ?";
     private static final String CHECK_ID_QUERY =
             "SELECT COUNT(*) " +
             "FROM reviews " +
             "WHERE id = ?";
     private static final String DELETE_QUERY =
             "DELETE FROM reviews " +
+            "WHERE id = ?";
+    private static final String CHECK_USER_ID_QUERY =
+            "SELECT COUNT(*) " +
+            "FROM users " +
+            "WHERE id = ?";
+    private static final String CHECK_FILM_ID_QUERY =
+            "SELECT COUNT(*) " +
+            "FROM films " +
             "WHERE id = ?";
 
     public ReviewRepository(JdbcTemplate jdbc, RowMapper<Review> mapper) {
@@ -48,6 +59,8 @@ public class ReviewRepository extends BaseRepository<Review> {
     }
 
     public Review create(Review review) {
+        checkUserId(review);
+        checkFilmId(review);
         long reviewId = insert(
                 INSERT_QUERY,
                 review.getContent(),
@@ -61,12 +74,19 @@ public class ReviewRepository extends BaseRepository<Review> {
 
     public Review update(Review review) {
         checkId(review);
+        checkUserId(review);
+        checkFilmId(review);
         update(
                 UPDATE_QUERY,
                 review.getContent(),
-                review.getIsPositive()
+                review.getIsPositive(),
+                review.getId()
         );
         return findById(review.getId()).orElseThrow(() -> new NotFoundException(notFound));
+    }
+
+    public void updateUseful(Long reviewId, int delta) {
+        jdbc.update(UPDATE_USEFUL_QUERY, delta, reviewId);
     }
 
     public void delete(Long id) {
@@ -82,6 +102,24 @@ public class ReviewRepository extends BaseRepository<Review> {
         if (count == 0) {
             throw new NotFoundException(
                     String.format("Отзыв с таким id: %d - отсутствует", review.getId())
+            );
+        }
+    }
+
+    void checkUserId(Review review) {
+        Integer count = jdbc.queryForObject(CHECK_USER_ID_QUERY, Integer.class, review.getUserId());
+        if (count == 0) {
+            throw new NotFoundException(
+                    String.format("Пользователь с id: %d - отсутствует", review.getUserId())
+            );
+        }
+    }
+
+    void checkFilmId(Review review) {
+        Integer count = jdbc.queryForObject(CHECK_FILM_ID_QUERY, Integer.class, review.getFilmId());
+        if (count == 0) {
+            throw new NotFoundException(
+                    String.format("Фильм с id: %d - отсутствует", review.getFilmId())
             );
         }
     }

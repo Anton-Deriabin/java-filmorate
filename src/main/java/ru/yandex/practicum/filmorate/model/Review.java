@@ -20,10 +20,10 @@ public class Review {
     @NotNull(message = "Статус не может быть null")
     Boolean isPositive;
 
-    @NotNull
+    @NotNull(message = "id фильма не может быть null")
     Long filmId;
 
-    @NotNull
+    @NotNull(message = "id пользователя не может быть null")
     Long userId;
 
     Long useful;

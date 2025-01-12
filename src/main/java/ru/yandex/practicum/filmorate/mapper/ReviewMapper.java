@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 public class ReviewMapper {
     public static ReviewDto mapToReviewDto(Review review) {
         ReviewDto dto = new ReviewDto();
-        dto.setId(review.getId());
+        dto.setReviewId(review.getId());
         dto.setContent(review.getContent());
         dto.setIsPositive(review.getIsPositive());
         dto.setFilmId(review.getFilmId());
@@ -20,7 +20,7 @@ public class ReviewMapper {
 
     public static Review mapToReview(ReviewDto dto) {
         Review review = new Review();
-        review.setId(dto.getId());
+        review.setId(dto.getReviewId());
         review.setContent(dto.getContent());
         review.setIsPositive(dto.getIsPositive());
         review.setFilmId(dto.getFilmId());

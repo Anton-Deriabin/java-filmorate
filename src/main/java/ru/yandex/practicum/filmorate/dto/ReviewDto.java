@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class ReviewDto {
-    private Long id;
+    private Long reviewId;
 
     @NotNull(message = "Отзыв не может быть null")
     @NotBlank(message = "Отзыв не может быть пустым")
@@ -21,6 +21,5 @@ public class ReviewDto {
     @NotNull
     private Long userId;
 
-    @NotNull
     private Long useful;
 }
