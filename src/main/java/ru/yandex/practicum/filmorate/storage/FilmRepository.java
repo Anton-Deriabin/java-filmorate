@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> {
-    private final String notFound = "Фильм не найден после создания";
+    private final String notFound = "Фильм с таким id - не найден";
     private static final String FIND_ALL_QUERY =
             "SELECT f.*, r.name AS rating_name " +
             "FROM films f " +
