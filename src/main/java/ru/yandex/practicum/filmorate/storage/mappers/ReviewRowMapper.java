@@ -18,7 +18,6 @@ public class ReviewRowMapper implements RowMapper<Review> {
         review.setIsPositive(resultSet.getBoolean("is_positive"));
         review.setFilmId(resultSet.getLong("film_id"));
         review.setUserId(resultSet.getLong("user_id"));
-        review.setUseful(resultSet.getLong("useful"));
         return review;
     }
 }

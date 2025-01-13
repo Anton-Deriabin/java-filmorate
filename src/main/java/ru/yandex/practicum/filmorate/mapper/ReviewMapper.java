@@ -7,14 +7,14 @@ import ru.yandex.practicum.filmorate.model.Review;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ReviewMapper {
-    public static ReviewDto mapToReviewDto(Review review) {
+    public static ReviewDto mapToReviewDto(Review review, Long useful) {
         ReviewDto dto = new ReviewDto();
         dto.setReviewId(review.getId());
         dto.setContent(review.getContent());
         dto.setIsPositive(review.getIsPositive());
         dto.setFilmId(review.getFilmId());
         dto.setUserId(review.getUserId());
-        dto.setUseful(review.getUseful());
+        dto.setUseful(useful);
         return dto;
     }
 
@@ -25,7 +25,6 @@ public class ReviewMapper {
         review.setIsPositive(dto.getIsPositive());
         review.setFilmId(dto.getFilmId());
         review.setUserId(dto.getUserId());
-        review.setUseful(dto.getUseful());
         return review;
     }
 }

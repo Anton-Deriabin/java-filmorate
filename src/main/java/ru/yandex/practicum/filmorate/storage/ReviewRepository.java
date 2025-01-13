@@ -26,10 +26,10 @@ public class ReviewRepository extends BaseRepository<Review> {
             "UPDATE reviews " +
             "SET content = ?, is_positive = ? " +
             "WHERE id = ?";
-    private static final String UPDATE_USEFUL_QUERY =
-            "UPDATE reviews " +
-            "SET useful = useful + ? " +
-            "WHERE id = ?";
+    private static final String CALCULATE_USEFUL_QUERY =
+            "SELECT COALESCE(SUM(vote), 0) " +
+            "FROM review_likes " +
+            "WHERE review_id = ?";
     private static final String CHECK_ID_QUERY =
             "SELECT COUNT(*) " +
             "FROM reviews " +
@@ -85,16 +85,16 @@ public class ReviewRepository extends BaseRepository<Review> {
         return findById(review.getId()).orElseThrow(() -> new NotFoundException(notFound));
     }
 
-    public void updateUseful(Long reviewId, int delta) {
-        jdbc.update(UPDATE_USEFUL_QUERY, delta, reviewId);
-    }
-
     public void delete(Long id) {
         findById(id).orElseThrow(() -> new NotFoundException(notFound));
         delete(
                 DELETE_QUERY,
                 id
         );
+    }
+
+    public int calculateUseful(Long reviewId) {
+        return jdbc.queryForObject(CALCULATE_USEFUL_QUERY, Integer.class, reviewId);
     }
 
     void checkId(Review review) {

@@ -31,25 +31,38 @@ public class ReviewService {
                     .toList();
         }
         int limit = (count != null && count > 0) ? count : 10;
+
         return reviews.stream()
-                .sorted(Comparator.comparing(Review::getUseful).reversed())
+                .map(review -> {
+                    int useful = reviewRepository.calculateUseful(review.getId());
+                    return ReviewMapper.mapToReviewDto(review, (long) useful);
+                })
+                .sorted(Comparator.comparing(ReviewDto::getUseful).reversed())
                 .limit(limit)
-                .map(ReviewMapper::mapToReviewDto)
                 .toList();
     }
 
+
     public ReviewDto findById(long id) {
         return reviewRepository.findById(id)
-                .map(ReviewMapper::mapToReviewDto)
+                .map(review -> {
+                    int useful = reviewRepository.calculateUseful(review.getId());
+                    return ReviewMapper.mapToReviewDto(review, (long) useful);
+                })
                 .orElseThrow(() -> new NotFoundException(String.format("Отзыв с id=%d не найден", id)));
     }
 
+
     public ReviewDto create(Review review) {
-        return ReviewMapper.mapToReviewDto(reviewRepository.create(review));
+        Review createdReview = reviewRepository.create(review);
+        int useful = reviewRepository.calculateUseful(createdReview.getId());
+        return ReviewMapper.mapToReviewDto(createdReview, (long) useful);
     }
 
     public ReviewDto update(Review review) {
-        return ReviewMapper.mapToReviewDto(reviewRepository.update(review));
+        Review updatedReview = reviewRepository.update(review);
+        int useful = reviewRepository.calculateUseful(updatedReview.getId());
+        return ReviewMapper.mapToReviewDto(updatedReview, (long) useful);
     }
 
     public void delete(Long id) {
@@ -60,36 +73,24 @@ public class ReviewService {
         if (vote != 1 && vote != -1) {
             throw new IllegalArgumentException("Некорректное значение vote: " + vote);
         }
-
         Integer existingVote;
         try {
             existingVote = reviewLikeRepository.getVote(reviewId, userId);
         } catch (EmptyResultDataAccessException e) {
-            existingVote = null; // Если голос отсутствует
+            existingVote = null;
         }
-
         if (existingVote != null) {
             if (existingVote == vote) {
                 throw new DuplicatedDataException(String.format(
                         "Отзыву с id = %d уже поставлен такой же голос пользователем с id = %d", reviewId, userId));
             } else {
-                // Удаляем старый голос и корректируем значение useful
                 reviewLikeRepository.deleteVote(reviewId, userId);
-                int delta = (existingVote == 1) ? -1 : 1; // Убираем предыдущий голос
-                reviewRepository.updateUseful(reviewId, delta);
             }
         }
-
-        // Добавляем новый голос и обновляем useful
         reviewLikeRepository.addVote(reviewId, userId, vote);
-        int delta = (vote == 1) ? 1 : -1; // Увеличиваем или уменьшаем useful
-        reviewRepository.updateUseful(reviewId, delta);
     }
 
     public void deleteVote(Long reviewId, Long userId) {
-        Integer vote = reviewLikeRepository.getVote(reviewId, userId);
         reviewLikeRepository.deleteVote(reviewId, userId);
-        int delta = (vote == 1) ? -1 : 1;
-        reviewRepository.updateUseful(reviewId, delta);
     }
 }

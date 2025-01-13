@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -33,28 +32,6 @@ public class ReviewLikeRepository extends BaseRepository<ReviewLike> {
     }
 
     public void addVote(Long reviewId, Long userId, int vote) {
-        if (vote != 1 && vote != -1) {
-            throw new IllegalArgumentException("Некорректное значение vote: " + vote);
-        }
-
-        Integer existingVote;
-        try {
-            existingVote = getVote(reviewId, userId);
-        } catch (EmptyResultDataAccessException e) {
-            existingVote = null; // Если голос отсутствует
-        }
-
-        if (existingVote != null) {
-            if (existingVote == vote) {
-                throw new DuplicatedDataException(String.format(
-                        "Отзыву с id = %d уже поставлен такой же голос пользователем с id = %d", reviewId, userId));
-            } else {
-                // Если голос отличается, удаляем старый
-                deleteVote(reviewId, userId);
-            }
-        }
-
-        // Добавляем новый голос
         insert(INSERT_QUERY, reviewId, userId, vote);
     }
 
