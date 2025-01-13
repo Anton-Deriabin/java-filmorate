@@ -36,5 +36,7 @@ public class Film {
     Set<Genre> genres = new HashSet<>();
 
     private Set<Like> likes = new HashSet<>();
+
+    private Set<Director> directors = new HashSet<>();
 }
 

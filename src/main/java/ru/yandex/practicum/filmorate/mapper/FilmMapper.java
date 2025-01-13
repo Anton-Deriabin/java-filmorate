@@ -2,9 +2,11 @@ package ru.yandex.practicum.filmorate.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import ru.yandex.practicum.filmorate.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.GenreDto;
 import ru.yandex.practicum.filmorate.dto.MpaRatingDto;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
@@ -12,7 +14,6 @@ import ru.yandex.practicum.filmorate.model.MpaRating;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.LinkedHashSet;
-
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FilmMapper {
@@ -43,6 +44,17 @@ public class FilmMapper {
         if (film.getLikes() != null) {
             dto.setLikes(film.getLikes());
         }
+        if (film.getDirectors() != null) {
+            Set<DirectorDto> directorDtos = film.getDirectors().stream()
+                    .map(director -> {
+                        DirectorDto directorDto = new DirectorDto();
+                        directorDto.setId(director.getId());
+                        directorDto.setName(director.getName());
+                        return directorDto;
+                    })
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            dto.setDirectors(directorDtos);
+        }
         return dto;
     }
 
@@ -68,8 +80,16 @@ public class FilmMapper {
                     .collect(Collectors.toCollection(LinkedHashSet::new)); // Используем LinkedHashSet
             film.setGenres(genres);
         }
+        if (dto.getDirectors() != null) {
+            Set<Director> directors = dto.getDirectors().stream()
+                    .map(directorDto -> {
+                        Director director = new Director();
+                        director.setId(directorDto.getId());
+                        return director;
+                    })
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            film.setDirectors(directors);
+        }
         return film;
     }
 }
-
-
