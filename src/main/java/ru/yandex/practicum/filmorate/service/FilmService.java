@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -33,8 +34,9 @@ public class FilmService {
             Film film = filmOptional.get();
             filmEnrichmentService.enrichFilm(film);
             return Optional.of(FilmMapper.mapToFilmDto(film));
+        } else {
+            throw new NotFoundException(String.format("Фильм с id=%d не найден", id));
         }
-        return Optional.empty();
     }
 
     public FilmDto create(Film film) {
@@ -49,6 +51,10 @@ public class FilmService {
         Film updatedFilm = filmRepository.update(film);
         filmEnrichmentService.enrichFilm(updatedFilm);
         return FilmMapper.mapToFilmDto(updatedFilm);
+    }
+
+    public void delete(Long id) {
+        filmRepository.delete(id);
     }
 
     public void addLike(Long filmId, Long userId) {
