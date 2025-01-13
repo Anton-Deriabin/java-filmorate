@@ -27,6 +27,12 @@ public class DirectorRepository extends BaseRepository<Director> {
             "UPDATE directors SET name = ? WHERE id = ?";
     private static final String DELETE_QUERY =
             "DELETE FROM directors WHERE id = ?";
+    private static final String FIND_DIRECTORS_FOR_FILMS_QUERY =
+            "SELECT fd.film_id, d.* " +
+                    "FROM film_directors fd " +
+                    "JOIN directors d ON fd.director_id = d.id " +
+                    "WHERE fd.film_id IN (%s) " +
+                    "ORDER BY fd.film_id, d.id";
 
     public DirectorRepository(JdbcTemplate jdbc, RowMapper<Director> mapper) {
         super(jdbc, mapper, Director.class);
@@ -68,11 +74,7 @@ public class DirectorRepository extends BaseRepository<Director> {
         String inClause = filmIds.stream()
                 .map(String::valueOf)
                 .collect(Collectors.joining(", "));
-        String query = "SELECT fd.film_id, d.* " +
-                "FROM film_directors fd " +
-                "JOIN directors d ON fd.director_id = d.id " +
-                "WHERE fd.film_id IN (" + inClause + ") " +
-                "ORDER BY fd.film_id, d.id";
+        String query = String.format(FIND_DIRECTORS_FOR_FILMS_QUERY, inClause);
 
         Map<Long, Set<Director>> directorsByFilm = new HashMap<>();
         jdbc.query(query, rs -> {
