@@ -38,7 +38,7 @@ public class ReviewLikeRepository extends BaseRepository<ReviewLike> {
     public void deleteVote(Long reviewId, Long userId) {
         Integer count = jdbc.queryForObject(CHECK_REQUEST_QUERY, Integer.class, reviewId, userId);
         if (count == 0) {
-            throw new DuplicatedDataException(String.format("Отзыву с id = %d, еще не поставлен поставлен лайк " +
+            throw new DuplicatedDataException(String.format("Отзыву с id = %d, еще не поставлен vote " +
                     "пользователем с id = %d", reviewId, userId));
         }
         delete(DELETE_QUERY, reviewId, userId);

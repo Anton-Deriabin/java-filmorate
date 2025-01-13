@@ -82,7 +82,7 @@ public class ReviewService {
         if (existingVote != null) {
             if (existingVote == vote) {
                 throw new DuplicatedDataException(String.format(
-                        "Отзыву с id = %d уже поставлен такой же голос пользователем с id = %d", reviewId, userId));
+                        "Отзыву с id = %d уже поставлен такой же vote пользователем с id = %d", reviewId, userId));
             } else {
                 reviewLikeRepository.deleteVote(reviewId, userId);
             }
