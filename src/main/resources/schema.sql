@@ -56,6 +56,25 @@ CREATE TABLE IF NOT EXISTS directors (
     name VARCHAR NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS reviews (
+    id      BIGINT PRIMARY KEY AUTO_INCREMENT,
+    content VARCHAR NOT NULL,
+    is_positive BOOLEAN NOT NULL,
+    film_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS review_likes (
+    id      BIGINT PRIMARY KEY AUTO_INCREMENT,
+    review_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    vote SMALLINT NOT NULL CHECK (vote IN (-1, 1)),
+    FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS film_directors (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     film_id BIGINT NOT NULL,
