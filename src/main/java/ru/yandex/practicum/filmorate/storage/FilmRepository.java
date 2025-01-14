@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Director;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,6 +72,27 @@ public class FilmRepository extends BaseRepository<Film> {
 
     public List<Film> findAll() {
         return findMany(FIND_ALL_QUERY);
+    }
+
+    public List<Film> findAllWithFilters(Integer genreId, Integer year) {
+        if (genreId == null && year == null) {
+            return findAll();
+        }
+
+        StringBuilder queryBuilder = new StringBuilder(FIND_ALL_QUERY);
+        List<String> conditions = new ArrayList<>();
+
+        if (year != null) {
+            conditions.add("YEAR(f.release_date) = " + year);
+        }
+
+        if (genreId != null) {
+            queryBuilder.append("JOIN film_genres fg ON fg.film_id = f.id");
+            conditions.add("fg.genre_id = " + genreId);
+        }
+
+        queryBuilder.append(" WHERE ").append(String.join(" AND ", conditions));
+        return findMany(queryBuilder.toString());
     }
 
     public Optional<Film> findById(Long id) {
