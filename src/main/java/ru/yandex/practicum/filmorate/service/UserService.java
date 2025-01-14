@@ -67,6 +67,10 @@ public class UserService {
         return UserMapper.mapToUserDto(userRepository.update(newUser));
     }
 
+    public void delete(Long id) {
+        userRepository.delete(id);
+    }
+
     public List<UserDto> getFriends(Long receiver) {
         checkUserExists(receiver);
 
