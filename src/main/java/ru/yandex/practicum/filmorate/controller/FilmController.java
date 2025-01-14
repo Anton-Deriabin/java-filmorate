@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+
 import java.util.List;
 import java.util.Optional;
 
@@ -53,4 +54,14 @@ public class FilmController {
     public List<FilmDto> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
         return filmService.getPopularFilms(count);
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<FilmDto> getFilmsByDirector(
+            @PathVariable Long directorId,
+            @RequestParam(defaultValue = "likes") String sortBy
+    ) {
+        return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
+
 }
