@@ -17,34 +17,37 @@ public class FilmRepository extends BaseRepository<Film> {
     private final String notFound = "Фильм с таким id - не найден";
     private static final String FIND_ALL_QUERY =
             "SELECT f.*, r.name AS rating_name " +
-                    "FROM films f " +
-                    "LEFT JOIN ratings r ON f.rating_id = r.id ";
+            "FROM films f " +
+            "LEFT JOIN ratings r ON f.rating_id = r.id ";
     private static final String FIND_BY_ID_QUERY =
             "SELECT f.*, r.name AS rating_name " +
-                    "FROM films f " +
-                    "LEFT JOIN ratings r ON f.rating_id = r.id " +
-                    "WHERE f.id = ?";
+            "FROM films f " +
+            "LEFT JOIN ratings r ON f.rating_id = r.id " +
+            "WHERE f.id = ?";
     private static final String INSERT_QUERY =
             "INSERT INTO films(name, description, release_date, duration, rating_id) " +
-                    "VALUES (?, ?, ?, ?, ?)";
+            "VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY =
             "UPDATE films " +
-                    "SET name = ?, description = ?, release_date = ?, duration = ?, rating_id = ? " +
+            "SET name = ?, description = ?, release_date = ?, duration = ?, rating_id = ? " +
+            "WHERE id = ?";
+    private static final String DELETE_QUERY =
+            "DELETE FROM films " +
                     "WHERE id = ?";
     private static final String DELETE_GENRES_BY_FILM_ID =
             "DELETE FROM film_genres " +
-                    "WHERE film_id = ?";
+            "WHERE film_id = ?";
     private static final String INSERT_IN_FILM_GENRES_QUERY =
             "INSERT INTO film_genres(film_id, genre_id) " +
-                    "VALUES (?, ?)";
+            "VALUES (?, ?)";
     private static final String CHECK_RATING_QUERY =
             "SELECT COUNT(*) " +
-                    "FROM ratings " +
-                    "WHERE id = ?";
+            "FROM ratings " +
+            "WHERE id = ?";
     private static final String CHECK_GENRE_QUERY =
             "SELECT COUNT(*) " +
-                    "FROM genres " +
-                    "WHERE id = ?";
+            "FROM genres " +
+            "WHERE id = ?";
     private static final String CHECK_ID_QUERY =
             "SELECT COUNT(*) " +
                     "FROM films " +
@@ -109,6 +112,14 @@ public class FilmRepository extends BaseRepository<Film> {
         saveGenres(film);
         saveDirectors(film);
         return findById(film.getId()).orElseThrow(() -> new NotFoundException(notFound));
+    }
+
+    public void delete(Long id) {
+        findById(id).orElseThrow(() -> new NotFoundException(notFound));
+        delete(
+                DELETE_QUERY,
+                id
+        );
     }
 
     public List<Film> findFilmsByDirector(Long directorId) {
