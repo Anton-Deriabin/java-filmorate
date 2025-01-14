@@ -28,6 +28,14 @@ public class FilmService {
                 .toList();
     }
 
+    public List<FilmDto> findAllWithIds(Set<Long> filmIds) {
+        List<Film> films = filmRepository.findAllWithIds(filmIds);
+        filmEnrichmentService.enrichFilms(films);
+        return films.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
     public Optional<FilmDto> findById(Long id) {
         Optional<Film> filmOptional = filmRepository.findById(id);
         if (filmOptional.isPresent()) {

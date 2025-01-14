@@ -11,6 +11,8 @@ import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> {
@@ -19,6 +21,11 @@ public class FilmRepository extends BaseRepository<Film> {
             "SELECT f.*, r.name AS rating_name " +
             "FROM films f " +
             "LEFT JOIN ratings r ON f.rating_id = r.id ";
+    private static final String FIND_ALL_WITH_IDS_QUERY =
+            "SELECT f.*, r.name AS rating_name " +
+            "FROM films f " +
+            "LEFT JOIN ratings r ON f.rating_id = r.id " +
+            "WHERE f.id IN (:FILM_IDS)";
     private static final String FIND_BY_ID_QUERY =
             "SELECT f.*, r.name AS rating_name " +
             "FROM films f " +
@@ -71,6 +78,18 @@ public class FilmRepository extends BaseRepository<Film> {
 
     public List<Film> findAll() {
         return findMany(FIND_ALL_QUERY);
+    }
+
+    public List<Film> findAllWithIds(Set<Long> filmIds) {
+        if (filmIds.isEmpty()) {
+            return List.of();
+        }
+
+        String query = FIND_ALL_WITH_IDS_QUERY.replace(
+                ":FILM_IDS",
+                filmIds.stream().map(String::valueOf).collect(Collectors.joining(", "))
+        );
+        return findMany(query);
     }
 
     public Optional<Film> findById(Long id) {
