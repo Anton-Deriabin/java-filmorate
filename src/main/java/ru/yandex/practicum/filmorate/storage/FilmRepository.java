@@ -55,6 +55,12 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String INSERT_IN_FILM_DIRECTORS_QUERY =
             "INSERT INTO film_directors(film_id, director_id) " +
                     "VALUES (?, ?)";
+    private static final String FIND_FILMS_BY_DIRECTOR_QUERY =
+            "SELECT f.*, r.name AS rating_name " +
+                    "FROM films f " +
+                    "JOIN film_directors fd ON f.id = fd.film_id " +
+                    "LEFT JOIN ratings r ON f.rating_id = r.id " +
+                    "WHERE fd.director_id = ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper, Film.class);
@@ -106,12 +112,7 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     public List<Film> findFilmsByDirector(Long directorId) {
-        String sql = "SELECT f.*, r.name AS rating_name " +
-                "FROM films f " +
-                "JOIN film_directors fd ON f.id = fd.film_id " +
-                "LEFT JOIN ratings r ON f.rating_id = r.id " +
-                "WHERE fd.director_id = ?";
-        return findMany(sql, directorId);
+        return findMany(FIND_FILMS_BY_DIRECTOR_QUERY, directorId);
     }
 
     private void saveGenres(Film film) {
