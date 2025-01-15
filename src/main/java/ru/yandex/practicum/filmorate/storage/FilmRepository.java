@@ -19,7 +19,7 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String FIND_ALL_QUERY =
             "SELECT f.*, r.name AS rating_name " +
             "FROM films f " +
-            "LEFT JOIN ratings r ON f.rating_id = r.id ";
+            "LEFT JOIN ratings r ON f.rating_id = r.id";
     private static final String FIND_BY_ID_QUERY =
             "SELECT f.*, r.name AS rating_name " +
             "FROM films f " +
@@ -87,7 +87,7 @@ public class FilmRepository extends BaseRepository<Film> {
         }
 
         if (genreId != null) {
-            queryBuilder.append("JOIN film_genres fg ON fg.film_id = f.id");
+            queryBuilder.append(" JOIN film_genres fg ON fg.film_id = f.id");
             conditions.add("fg.genre_id = " + genreId);
         }
 
