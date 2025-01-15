@@ -16,3 +16,17 @@ VALUES
 (4, 'Триллер'),
 (5, 'Документальный'),
 (6, 'Боевик');
+
+-- Наполнение таблицы event_type
+MERGE INTO event_type (id, name) KEY(id)
+VALUES
+(1, 'LIKE'),
+(2, 'REVIEW'),
+(3, 'FRIEND');
+
+-- Наполнение таблицы operation
+MERGE INTO operation (id, name) KEY(id)
+VALUES
+(1, 'REMOVE'),
+(2, 'ADD'),
+(3, 'UPDATE');

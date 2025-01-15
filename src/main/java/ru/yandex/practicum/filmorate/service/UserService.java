@@ -5,7 +5,11 @@ import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.EventRepository;
 import ru.yandex.practicum.filmorate.storage.FriendshipRepository;
 import ru.yandex.practicum.filmorate.storage.UserRepository;
 
@@ -15,10 +19,12 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
+    private final EventRepository eventRepository;
 
-    public UserService(UserRepository userRepository, FriendshipRepository friendshipRepository) {
+    public UserService(UserRepository userRepository, FriendshipRepository friendshipRepository, EventRepository eventRepository) {
         this.userRepository = userRepository;
-        this.friendshipRepository =  friendshipRepository;
+        this.friendshipRepository = friendshipRepository;
+        this.eventRepository = eventRepository;
     }
 
     public List<UserDto> findAll() {
@@ -65,9 +71,11 @@ public class UserService {
 
     public void addFriend(Long sender, Long receiver) {
         friendshipRepository.addFriend(sender, receiver);
+        eventRepository.addEvent(receiver, sender, EventType.FRIEND, Operation.ADD);
     }
 
     public void deleteFriend(Long sender, Long receiver) {
+        eventRepository.addEvent(receiver, sender, EventType.FRIEND, Operation.REMOVE);
         friendshipRepository.deleteFriend(sender, receiver);
     }
 
@@ -82,5 +90,9 @@ public class UserService {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+    }
+
+    public List<Event> getEventFeed(Long id) {
+        return eventRepository.findFeedForUser(id);
     }
 }
