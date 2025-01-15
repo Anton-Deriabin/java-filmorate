@@ -97,7 +97,17 @@ public class UserService {
         checkUserExists(userId);
 
         List<Long> filmsLikedByUser = likeRepository.getFilmIdsLikedByUser(userId);
+
+        if (filmsLikedByUser.isEmpty()) {
+            return List.of();
+        }
+
         List<Long> usersWithSameTaste = likeRepository.getUserIdsWhoLikedFilms(filmsLikedByUser, userId);
+
+        if (usersWithSameTaste.isEmpty()) {
+            return List.of();
+        }
+
         Map<Long, Set<Long>> userToLikedFilmsMap = likeRepository.getUsersWithLikedFilms(usersWithSameTaste);
 
         long nearestUserIdByTaste = userToLikedFilmsMap.keySet().stream()
