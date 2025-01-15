@@ -4,6 +4,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -12,6 +13,7 @@ import java.util.Optional;
 
 @Repository
 public class UserRepository extends BaseRepository<User> {
+    private final String notFound = "Пользователь с таким id - не найден";
     private static final String FIND_ALL_QUERY =
             "SELECT * " +
             "FROM users";
@@ -26,6 +28,9 @@ public class UserRepository extends BaseRepository<User> {
             "UPDATE users " +
             "SET email = ?, name = ?, login = ?, birthday = ? " +
             "WHERE id = ?";
+    private static final String DELETE_QUERY =
+            "DELETE FROM users " +
+                    "WHERE id = ?";
     private static final String FIND_FRIENDS_QUERY =
             "SELECT u.* " +
             "FROM users u " +
@@ -64,7 +69,7 @@ public class UserRepository extends BaseRepository<User> {
                 Date.valueOf(user.getBirthday())
         );
         user.setId(id);
-        return user;
+        return findById(user.getId()).orElseThrow(() -> new NotFoundException(notFound));
     }
 
     public User update(User user) {
@@ -77,7 +82,15 @@ public class UserRepository extends BaseRepository<User> {
                 Date.valueOf(user.getBirthday()),
                 user.getId()
         );
-        return user;
+        return findById(user.getId()).orElseThrow(() -> new NotFoundException(notFound));
+    }
+
+    public void delete(Long id) {
+        findById(id).orElseThrow(() -> new NotFoundException(notFound));
+        delete(
+                DELETE_QUERY,
+                id
+        );
     }
 
     public List<User> getFriends(Long receiver) {

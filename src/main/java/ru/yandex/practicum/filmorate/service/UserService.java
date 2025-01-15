@@ -59,6 +59,10 @@ public class UserService {
         return UserMapper.mapToUserDto(userRepository.update(newUser));
     }
 
+    public void delete(Long id) {
+        userRepository.delete(id);
+    }
+
     public List<UserDto> getFriends(Long receiver) {
         if (userRepository.findById(receiver).isEmpty()) {
             throw new NotFoundException(String.format("Пользователь с id=%d не найден", receiver));

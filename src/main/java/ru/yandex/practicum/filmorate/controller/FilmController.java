@@ -7,7 +7,6 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
-
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +17,7 @@ public class FilmController {
     private final String filmsIdPath = "/{id}";
     private final String likePath = "/{id}/like/{user-id}";
     private final String popularPath = "/popular";
+    private final String commonFilmsPath = "/common";
     private final FilmService filmService;
 
     @GetMapping
@@ -38,6 +38,11 @@ public class FilmController {
     @PutMapping()
     public FilmDto update(@Valid @RequestBody FilmDto filmDto) {
         return filmService.update(FilmMapper.mapToFilm(filmDto));
+    }
+
+    @DeleteMapping(filmsIdPath)
+    public void delete(@PathVariable Long id) {
+        filmService.delete(id);
     }
 
     @PutMapping(likePath)
@@ -63,5 +68,9 @@ public class FilmController {
         return filmService.getFilmsByDirector(directorId, sortBy);
     }
 
-
+    @GetMapping(commonFilmsPath)
+    public List<FilmDto> getCommonFilms(@RequestParam("userId") Long userId,
+                                        @RequestParam("friendId") Long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
 }
