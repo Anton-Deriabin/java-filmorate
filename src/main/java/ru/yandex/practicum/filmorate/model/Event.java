@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @EqualsAndHashCode(of = {"id"})
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Event {
-    Long id;
+    Long eventId;
 
     @NotNull(message = "Id пользователя не может быть null")
     @NotBlank(message = "Id пользователя не может быть пустым")
