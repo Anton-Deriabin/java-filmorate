@@ -21,7 +21,6 @@ public class UserController {
     private final String commonFriendsPath = "/{id}/friends/common/{other-id}";
     private final String recommendationsPath = "/{id}/recommendations";
     private final String getFeed = "/{id}/feed";
-    
     private final UserService userService;
 
     @GetMapping()
@@ -73,6 +72,7 @@ public class UserController {
     public List<FilmDto> getRecommendationsForUser(@PathVariable Long id) {
         return userService.getRecommendationsForUser(id);
     }
+
     @GetMapping(getFeed)
     public List<Event> getEventFeed(@PathVariable Long id) {
         return userService.getEventFeed(id);

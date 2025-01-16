@@ -120,7 +120,6 @@ public class UserService {
         Map<Long, Set<Long>> userToLikedFilmsMap = likeRepository.getUsersWithLikedFilms(usersWithSameTaste);
 
         long nearestUserIdByTaste = userToLikedFilmsMap.keySet().stream()
-                // для каждого ИД юзера вычислить число общих фильмов с исследуемым юзером
                 .map((Long id) -> {
                     List<Long> commonFilmsWithLikes = new ArrayList<>(filmsLikedByUser);
                     commonFilmsWithLikes.retainAll(userToLikedFilmsMap.get(id));
@@ -129,7 +128,6 @@ public class UserService {
                             "commonFilms", (long) commonFilmsWithLikes.size()
                     );
                 })
-                // отбор наибольшего совпадения
                 .max(Comparator.comparingLong(m -> m.get("commonFilms")))
                 .orElse(Map.of("userId", -1L))
                 .get("userId");
@@ -139,7 +137,6 @@ public class UserService {
         }
 
         Set<Long> recommendations = userToLikedFilmsMap.get(nearestUserIdByTaste);
-        // удалить из recommendations все фильмы, которые уже лайкал исследуемый юзер
         filmsLikedByUser.forEach(recommendations::remove);
         return filmService.findAllWithIds(recommendations);
     }
