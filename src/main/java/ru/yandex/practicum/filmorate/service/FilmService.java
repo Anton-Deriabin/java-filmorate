@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,14 @@ public class FilmService {
 
     public List<FilmDto> findAll() {
         List<Film> films = filmRepository.findAll();
+        filmEnrichmentService.enrichFilms(films);
+        return films.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
+    public List<FilmDto> findAllWithIds(Set<Long> filmIds) {
+        List<Film> films = filmRepository.findAllWithIds(filmIds);
         filmEnrichmentService.enrichFilms(films);
         return films.stream()
                 .map(FilmMapper::mapToFilmDto)
@@ -82,8 +91,8 @@ public class FilmService {
         likeRepository.deleteLike(filmId, userId);
     }
 
-    public List<FilmDto> getPopularFilms(int count) {
-        List<Film> films = filmRepository.findAll();
+    public List<FilmDto> getPopularFilms(int count, Integer genreId, Integer year) {
+        List<Film> films = filmRepository.findAllWithFilters(genreId, year);
         filmEnrichmentService.enrichFilms(films);
         return films.stream()
                 .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
