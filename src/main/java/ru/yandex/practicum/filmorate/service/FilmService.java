@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,14 @@ public class FilmService {
 
     public List<FilmDto> findAll() {
         List<Film> films = filmRepository.findAll();
+        filmEnrichmentService.enrichFilms(films);
+        return films.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
+    public List<FilmDto> findAllWithIds(Set<Long> filmIds) {
+        List<Film> films = filmRepository.findAllWithIds(filmIds);
         filmEnrichmentService.enrichFilms(films);
         return films.stream()
                 .map(FilmMapper::mapToFilmDto)
