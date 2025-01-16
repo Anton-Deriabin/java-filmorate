@@ -85,8 +85,8 @@ public class FilmService {
         likeRepository.deleteLike(filmId, userId);
     }
 
-    public List<FilmDto> getPopularFilms(int count) {
-        List<Film> films = filmRepository.findAll();
+    public List<FilmDto> getPopularFilms(int count, Integer genreId, Integer year) {
+        List<Film> films = filmRepository.findAllWithFilters(genreId, year);
         filmEnrichmentService.enrichFilms(films);
         return films.stream()
                 .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
