@@ -19,21 +19,21 @@ public class FilmRepository extends BaseRepository<Film> {
     private final String notFound = "Фильм с таким id - не найден";
     private static final String FIND_ALL_QUERY =
             "SELECT f.*, r.name AS rating_name " +
-            "FROM films f " +
-            "LEFT JOIN ratings r ON f.rating_id = r.id ";
+                    "FROM films f " +
+                    "LEFT JOIN ratings r ON f.rating_id = r.id ";
     private static final String FIND_ALL_WITH_IDS_QUERY =
             "SELECT f.*, r.name AS rating_name " +
-            "FROM films f " +
-            "LEFT JOIN ratings r ON f.rating_id = r.id " +
-            "WHERE f.id IN (:FILM_IDS)";
+                    "FROM films f " +
+                    "LEFT JOIN ratings r ON f.rating_id = r.id " +
+                    "WHERE f.id IN (:FILM_IDS)";
     private static final String FIND_BY_ID_QUERY =
             "SELECT f.*, r.name AS rating_name " +
-            "FROM films f " +
-            "LEFT JOIN ratings r ON f.rating_id = r.id " +
-            "WHERE f.id = ?";
+                    "FROM films f " +
+                    "LEFT JOIN ratings r ON f.rating_id = r.id " +
+                    "WHERE f.id = ?";
     private static final String INSERT_QUERY =
             "INSERT INTO films(name, description, release_date, duration, rating_id) " +
-            "VALUES (?, ?, ?, ?, ?)";
+                    "VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY =
             "UPDATE films " +
             "SET name = ?, description = ?, release_date = ?, duration = ?, rating_id = ? " +
@@ -41,20 +41,27 @@ public class FilmRepository extends BaseRepository<Film> {
     private static final String DELETE_QUERY =
             "DELETE FROM films " +
                     "WHERE id = ?";
+    private static final String GET_COMMON_FILMS_QUERY =
+            "SELECT f.*, r.name AS rating_name  " +
+                    "FROM films f " +
+                    "LEFT JOIN ratings r ON f.rating_id = r.id " +
+                    "JOIN likes l1 ON f.id = l1.film_id " +
+                    "JOIN likes l2 ON f.id = l2.film_id " +
+                    "WHERE l1.user_id = ? AND l2.user_id = ?";
     private static final String DELETE_GENRES_BY_FILM_ID =
             "DELETE FROM film_genres " +
-            "WHERE film_id = ?";
+                    "WHERE film_id = ?";
     private static final String INSERT_IN_FILM_GENRES_QUERY =
             "INSERT INTO film_genres(film_id, genre_id) " +
-            "VALUES (?, ?)";
+                    "VALUES (?, ?)";
     private static final String CHECK_RATING_QUERY =
             "SELECT COUNT(*) " +
-            "FROM ratings " +
-            "WHERE id = ?";
+                    "FROM ratings " +
+                    "WHERE id = ?";
     private static final String CHECK_GENRE_QUERY =
             "SELECT COUNT(*) " +
-            "FROM genres " +
-            "WHERE id = ?";
+                    "FROM genres " +
+                    "WHERE id = ?";
     private static final String CHECK_ID_QUERY =
             "SELECT COUNT(*) " +
                     "FROM films " +
@@ -143,6 +150,10 @@ public class FilmRepository extends BaseRepository<Film> {
 
     public List<Film> findFilmsByDirector(Long directorId) {
         return findMany(FIND_FILMS_BY_DIRECTOR_QUERY, directorId);
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return jdbc.query(GET_COMMON_FILMS_QUERY, mapper, userId, friendId);
     }
 
     private void saveGenres(Film film) {
