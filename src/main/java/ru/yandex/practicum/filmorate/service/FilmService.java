@@ -11,7 +11,10 @@ import ru.yandex.practicum.filmorate.storage.FilmRepository;
 import ru.yandex.practicum.filmorate.storage.LikeRepository;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,14 @@ public class FilmService {
 
     public List<FilmDto> findAll() {
         List<Film> films = filmRepository.findAll();
+        filmEnrichmentService.enrichFilms(films);
+        return films.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
+    public List<FilmDto> findAllWithIds(Set<Long> filmIds) {
+        List<Film> films = filmRepository.findAllWithIds(filmIds);
         filmEnrichmentService.enrichFilms(films);
         return films.stream()
                 .map(FilmMapper::mapToFilmDto)
@@ -57,6 +68,15 @@ public class FilmService {
         filmRepository.delete(id);
     }
 
+    public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
+        List<Film> films = filmRepository.getCommonFilms(userId, friendId);
+        filmEnrichmentService.enrichFilms(films);
+        return films.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
+                .toList();
+    }
+
     public void addLike(Long filmId, Long userId) {
         likeRepository.addLike(filmId, userId);
     }
@@ -75,6 +95,13 @@ public class FilmService {
                 .toList();
     }
 
+    private void checkReleaseDate(Film film) {
+        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+            throw new ValidationException("Дата выхода не может быть раньше " +
+                    "28.12.1895 - даты выхода первого в истории фильма");
+        }
+    }
+
     public List<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
         List<Film> films = filmRepository.findFilmsByDirector(directorId);
         filmEnrichmentService.enrichFilms(films);
@@ -88,12 +115,5 @@ public class FilmService {
         return films.stream()
                 .map(FilmMapper::mapToFilmDto)
                 .toList();
-    }
-
-    private void checkReleaseDate(Film film) {
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException("Дата выхода не может быть раньше " +
-                    "28.12.1895 - даты выхода первого в истории фильма");
-        }
     }
 }
