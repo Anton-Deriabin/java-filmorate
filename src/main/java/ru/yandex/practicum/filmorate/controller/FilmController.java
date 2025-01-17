@@ -1,23 +1,29 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/films")
 @RequiredArgsConstructor
 public class FilmController {
     private final String filmsIdPath = "/{id}";
-    private final String likePath = "/{id}/like/{user-id}";
+    private final String likePath = "/{id}/like/{userId}";
     private final String popularPath = "/popular";
     private final String commonFilmsPath = "/common";
+    private final String directorPath = "/director/{directorId}";
+    private final String searchPath = "/search";
     private final FilmService filmService;
 
     @GetMapping
@@ -30,12 +36,12 @@ public class FilmController {
         return filmService.findById(id);
     }
 
-    @PostMapping()
+    @PostMapping
     public FilmDto create(@Valid @RequestBody FilmDto filmDto) {
         return filmService.create(FilmMapper.mapToFilm(filmDto));
     }
 
-    @PutMapping()
+    @PutMapping
     public FilmDto update(@Valid @RequestBody FilmDto filmDto) {
         return filmService.update(FilmMapper.mapToFilm(filmDto));
     }
@@ -46,12 +52,12 @@ public class FilmController {
     }
 
     @PutMapping(likePath)
-    public void addLike(@PathVariable Long id, @PathVariable("user-id") Long userId) {
+    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping(likePath)
-    public void deleteLike(@PathVariable Long id, @PathVariable("user-id") Long userId) {
+    public void deleteLike(@PathVariable Long id, @PathVariable Long userId) {
         filmService.deleteLike(id, userId);
     }
 
@@ -64,7 +70,7 @@ public class FilmController {
         return filmService.getPopularFilms(count, genreId, year);
     }
 
-    @GetMapping("/director/{directorId}")
+    @GetMapping(directorPath)
     public List<FilmDto> getFilmsByDirector(
             @PathVariable Long directorId,
             @RequestParam(defaultValue = "likes") String sortBy
@@ -73,8 +79,24 @@ public class FilmController {
     }
 
     @GetMapping(commonFilmsPath)
-    public List<FilmDto> getCommonFilms(@RequestParam("userId") Long userId,
-                                        @RequestParam("friendId") Long friendId) {
+    public List<FilmDto> getCommonFilms(@RequestParam Long userId,
+                                        @RequestParam Long friendId) {
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping(searchPath)
+    public List<FilmDto> search(@RequestParam String query,
+                                @RequestParam String by) {
+        if (!isValidSearchBy(by)) {
+            throw new ValidationException("Parameter 'by' must contain 'director' and/or 'title'");
+        }
+        return filmService.search(query, by);
+    }
+
+    private boolean isValidSearchBy(String by) {
+        Set<String> validParams = Set.of("director", "title");
+        Set<String> providedParams = Arrays.stream(by.toLowerCase().split(","))
+                .collect(Collectors.toSet());
+        return !providedParams.isEmpty() && validParams.containsAll(providedParams);
     }
 }
