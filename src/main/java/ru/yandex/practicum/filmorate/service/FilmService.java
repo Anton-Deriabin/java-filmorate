@@ -14,10 +14,7 @@ import ru.yandex.practicum.filmorate.storage.FilmRepository;
 import ru.yandex.practicum.filmorate.storage.LikeRepository;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -119,6 +116,26 @@ public class FilmService {
         }
 
         return films.stream()
+                .map(FilmMapper::mapToFilmDto)
+                .toList();
+    }
+
+    public List<FilmDto> search(String query, String by) {
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+
+        List<String> searchBy = Arrays.asList(by.toLowerCase().split(","));
+
+        if (!searchBy.contains("director") && !searchBy.contains("title")) {
+            throw new ValidationException("Параметр 'by' должен содержать 'director' и/или 'title'");
+        }
+
+        List<Film> films = filmRepository.search(query, searchBy);
+        filmEnrichmentService.enrichFilms(films);
+
+        return films.stream()
+                .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
                 .map(FilmMapper::mapToFilmDto)
                 .toList();
     }
