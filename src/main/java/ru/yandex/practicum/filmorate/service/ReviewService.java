@@ -6,7 +6,10 @@ import ru.yandex.practicum.filmorate.dto.ReviewDto;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.mapper.ReviewMapper;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.EventRepository;
 import ru.yandex.practicum.filmorate.storage.ReviewLikeRepository;
 import ru.yandex.practicum.filmorate.storage.ReviewRepository;
 
@@ -17,10 +20,12 @@ import java.util.List;
 public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ReviewLikeRepository reviewLikeRepository;
+    private final EventRepository eventRepository;
 
-    public ReviewService(ReviewRepository reviewRepository, ReviewLikeRepository reviewLikeRepository) {
+    public ReviewService(ReviewRepository reviewRepository, ReviewLikeRepository reviewLikeRepository, EventRepository eventRepository) {
         this.reviewRepository = reviewRepository;
         this.reviewLikeRepository = reviewLikeRepository;
+        this.eventRepository = eventRepository;
     }
 
     public List<ReviewDto> findAll(Long filmId, Integer count) {
@@ -56,16 +61,20 @@ public class ReviewService {
     public ReviewDto create(Review review) {
         Review createdReview = reviewRepository.create(review);
         int useful = reviewRepository.calculateUseful(createdReview.getId());
+        eventRepository.addEvent(review.getUserId(), review.getId(), EventType.REVIEW, Operation.ADD);
         return ReviewMapper.mapToReviewDto(createdReview, (long) useful);
     }
 
     public ReviewDto update(Review review) {
         Review updatedReview = reviewRepository.update(review);
         int useful = reviewRepository.calculateUseful(updatedReview.getId());
+        eventRepository.addEvent(review.getUserId(), review.getId(), EventType.REVIEW, Operation.UPDATE);
         return ReviewMapper.mapToReviewDto(updatedReview, (long) useful);
     }
 
     public void delete(Long id) {
+        ReviewDto reviewDto = findById(id);
+        eventRepository.addEvent(reviewDto.getUserId(), reviewDto.getReviewId(), EventType.REVIEW, Operation.REMOVE);
         reviewRepository.delete(id);
     }
 
@@ -84,10 +93,12 @@ public class ReviewService {
                 throw new DuplicatedDataException(String.format(
                         "Отзыву с id = %d уже поставлен такой же vote пользователем с id = %d", reviewId, userId));
             } else {
+                eventRepository.addEvent(userId, reviewId, EventType.LIKE, Operation.REMOVE);
                 reviewLikeRepository.deleteVote(reviewId, userId);
             }
         }
         reviewLikeRepository.addVote(reviewId, userId, vote);
+        eventRepository.addEvent(userId, reviewId, EventType.LIKE, Operation.ADD);
     }
 
     public void deleteVote(Long reviewId, Long userId) {

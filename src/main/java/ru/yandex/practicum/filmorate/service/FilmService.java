@@ -6,7 +6,10 @@ import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.storage.EventRepository;
 import ru.yandex.practicum.filmorate.storage.FilmRepository;
 import ru.yandex.practicum.filmorate.storage.LikeRepository;
 
@@ -22,6 +25,7 @@ public class FilmService {
     private final FilmRepository filmRepository;
     private final LikeRepository likeRepository;
     private final FilmEnrichmentService filmEnrichmentService;
+    private final EventRepository eventRepository;
 
     public List<FilmDto> findAll() {
         List<Film> films = filmRepository.findAll();
@@ -79,9 +83,11 @@ public class FilmService {
 
     public void addLike(Long filmId, Long userId) {
         likeRepository.addLike(filmId, userId);
+        eventRepository.addEvent(userId, filmId, EventType.LIKE, Operation.ADD);
     }
 
     public void deleteLike(Long filmId, Long userId) {
+        eventRepository.addEvent(userId, filmId, EventType.LIKE, Operation.REMOVE);
         likeRepository.deleteLike(filmId, userId);
     }
 

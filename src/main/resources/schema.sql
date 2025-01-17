@@ -82,3 +82,27 @@ CREATE TABLE IF NOT EXISTS film_directors (
     FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE,
     FOREIGN KEY (director_id) REFERENCES directors(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS operation (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS event_type(
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS event (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    timestamp BIGINT NOT NULL,
+    entity_type_id BIGINT NOT NULL,
+    entity_id BIGINT NOT NULL,
+    operation_id BIGINT NOT NULL,
+    FOREIGN KEY (entity_type_id) REFERENCES event_type(id),
+    FOREIGN KEY (operation_id) REFERENCES operation(id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+

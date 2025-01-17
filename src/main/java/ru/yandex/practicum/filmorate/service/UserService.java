@@ -6,7 +6,11 @@ import ru.yandex.practicum.filmorate.dto.UserDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.EventRepository;
 import ru.yandex.practicum.filmorate.storage.FriendshipRepository;
 import ru.yandex.practicum.filmorate.storage.LikeRepository;
 import ru.yandex.practicum.filmorate.storage.UserRepository;
@@ -23,15 +27,18 @@ public class UserService {
     private final FriendshipRepository friendshipRepository;
     private final LikeRepository likeRepository;
     private final FilmService filmService;
+    private final EventRepository eventRepository;
 
     public UserService(UserRepository userRepository,
                        FriendshipRepository friendshipRepository,
                        LikeRepository likeRepository,
-                       FilmService filmService) {
+                       FilmService filmService,
+                       EventRepository eventRepository) {
         this.userRepository = userRepository;
         this.friendshipRepository = friendshipRepository;
         this.likeRepository = likeRepository;
         this.filmService = filmService;
+        this.eventRepository = eventRepository;
     }
 
     public List<UserDto> findAll() {
@@ -80,9 +87,11 @@ public class UserService {
 
     public void addFriend(Long sender, Long receiver) {
         friendshipRepository.addFriend(sender, receiver);
+        eventRepository.addEvent(receiver, sender, EventType.FRIEND, Operation.ADD);
     }
 
     public void deleteFriend(Long sender, Long receiver) {
+        eventRepository.addEvent(receiver, sender, EventType.FRIEND, Operation.REMOVE);
         friendshipRepository.deleteFriend(sender, receiver);
     }
 
@@ -111,7 +120,6 @@ public class UserService {
         Map<Long, Set<Long>> userToLikedFilmsMap = likeRepository.getUsersWithLikedFilms(usersWithSameTaste);
 
         long nearestUserIdByTaste = userToLikedFilmsMap.keySet().stream()
-                // для каждого ИД юзера вычислить число общих фильмов с исследуемым юзером
                 .map((Long id) -> {
                     List<Long> commonFilmsWithLikes = new ArrayList<>(filmsLikedByUser);
                     commonFilmsWithLikes.retainAll(userToLikedFilmsMap.get(id));
@@ -120,7 +128,6 @@ public class UserService {
                             "commonFilms", (long) commonFilmsWithLikes.size()
                     );
                 })
-                // отбор наибольшего совпадения
                 .max(Comparator.comparingLong(m -> m.get("commonFilms")))
                 .orElse(Map.of("userId", -1L))
                 .get("userId");
@@ -130,7 +137,6 @@ public class UserService {
         }
 
         Set<Long> recommendations = userToLikedFilmsMap.get(nearestUserIdByTaste);
-        // удалить из recommendations все фильмы, которые уже лайкал исследуемый юзер
         filmsLikedByUser.forEach(recommendations::remove);
         return filmService.findAllWithIds(recommendations);
     }
@@ -145,5 +151,9 @@ public class UserService {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+    }
+
+    public List<Event> getEventFeed(Long id) {
+        return eventRepository.findFeedForUser(id);
     }
 }
