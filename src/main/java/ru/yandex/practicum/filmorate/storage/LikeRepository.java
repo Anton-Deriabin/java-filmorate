@@ -43,7 +43,7 @@ public class LikeRepository extends BaseRepository<Like> {
                     "FROM likes " +
                     "WHERE user_id IN (:USER_IDS)";
 
-    public LikeRepository(JdbcTemplate jdbc, RowMapper<Like> mapper, EventRepository eventRepository) {
+    public LikeRepository(JdbcTemplate jdbc, RowMapper<Like> mapper) {
         super(jdbc, mapper, Like.class);
     }
 
