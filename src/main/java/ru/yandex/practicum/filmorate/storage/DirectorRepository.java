@@ -33,7 +33,7 @@ public class DirectorRepository extends BaseRepository<Director> {
                     "JOIN directors d ON fd.director_id = d.id " +
                     "WHERE fd.film_id IN (%s) " +
                     "ORDER BY fd.film_id, d.id";
-    String EXIST_D =  "SELECT COUNT(*) FROM DIRECTORS WHERE id = ?";
+    private static final String EXIST_DIRECTOR =  "SELECT COUNT(*) FROM DIRECTORS WHERE id = ?";
 
     public DirectorRepository(JdbcTemplate jdbc, RowMapper<Director> mapper) {
         super(jdbc, mapper, Director.class);
@@ -90,7 +90,7 @@ public class DirectorRepository extends BaseRepository<Director> {
     }
 
     public void existById(Long id) {
-        Integer countFilms = jdbc.queryForObject(EXIST_D, new Object[]{id}, Integer.class);
+        Integer countFilms = jdbc.queryForObject(EXIST_DIRECTOR, new Object[]{id}, Integer.class);
         if (countFilms == null || countFilms <= 0) {
             throw new NotFoundException("dir = " + id + " не найден");
         }
