@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.mapper.FilmMapper;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.storage.DirectorRepository;
 import ru.yandex.practicum.filmorate.storage.EventRepository;
 import ru.yandex.practicum.filmorate.storage.FilmRepository;
 import ru.yandex.practicum.filmorate.storage.LikeRepository;
@@ -22,6 +23,7 @@ public class FilmService {
     private final FilmRepository filmRepository;
     private final LikeRepository likeRepository;
     private final FilmEnrichmentService filmEnrichmentService;
+    private final DirectorRepository directorRepository;
     private final EventRepository eventRepository;
 
     public List<FilmDto> findAll() {
@@ -79,8 +81,8 @@ public class FilmService {
     }
 
     public void addLike(Long filmId, Long userId) {
-        likeRepository.addLike(filmId, userId);
         eventRepository.addEvent(userId, filmId, EventType.LIKE, Operation.ADD);
+        likeRepository.addLike(filmId, userId);
     }
 
     public void deleteLike(Long filmId, Long userId) {
@@ -108,7 +110,7 @@ public class FilmService {
     public List<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
         List<Film> films = filmRepository.findFilmsByDirector(directorId);
         filmEnrichmentService.enrichFilms(films);
-
+        directorRepository.existById(directorId);
         if ("year".equals(sortBy)) {
             films.sort(Comparator.comparing(Film::getReleaseDate));
         } else {
