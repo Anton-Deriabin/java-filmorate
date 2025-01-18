@@ -68,7 +68,7 @@ public class ReviewService {
     public ReviewDto update(Review review) {
         Review updatedReview = reviewRepository.update(review);
         int useful = reviewRepository.calculateUseful(updatedReview.getId());
-        eventRepository.addEvent(review.getUserId(), review.getId(), EventType.REVIEW, Operation.UPDATE);
+        eventRepository.addEvent(updatedReview.getUserId(), updatedReview.getId(), EventType.REVIEW, Operation.UPDATE);
         return ReviewMapper.mapToReviewDto(updatedReview, (long) useful);
     }
 
@@ -93,12 +93,10 @@ public class ReviewService {
                 throw new DuplicatedDataException(String.format(
                         "Отзыву с id = %d уже поставлен такой же vote пользователем с id = %d", reviewId, userId));
             } else {
-                eventRepository.addEvent(userId, reviewId, EventType.LIKE, Operation.REMOVE);
                 reviewLikeRepository.deleteVote(reviewId, userId);
             }
         }
         reviewLikeRepository.addVote(reviewId, userId, vote);
-        eventRepository.addEvent(userId, reviewId, EventType.LIKE, Operation.ADD);
     }
 
     public void deleteVote(Long reviewId, Long userId) {

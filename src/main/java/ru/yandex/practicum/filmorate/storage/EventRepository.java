@@ -39,6 +39,10 @@ public class EventRepository extends BaseRepository<Event> {
     }
 
     public List<Event> findFeedForUser(Long id) {
+        Integer count = jdbc.queryForObject(EXIST_USER, new Object[]{id}, Integer.class);
+        if (count == null || count <= 0) {
+            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+        }
         return findMany(EVENTS_FOR_USER_QUERY, id);
     }
 

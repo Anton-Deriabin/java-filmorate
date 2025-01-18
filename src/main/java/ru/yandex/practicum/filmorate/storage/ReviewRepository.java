@@ -14,37 +14,38 @@ public class ReviewRepository extends BaseRepository<Review> {
     private final String notFound = "Отзыв с таким id - не найден";
     private static final String FIND_ALL_QUERY =
             "SELECT * " +
-            "FROM reviews ";
+                    "FROM reviews ";
     private static final String FIND_BY_ID_QUERY =
             "SELECT * " +
-            "FROM reviews " +
-            "WHERE id = ?";
+                    "FROM reviews " +
+                    "WHERE id = ?";
     private static final String INSERT_QUERY =
             "INSERT INTO reviews(content, is_positive, film_id, user_id) " +
-            "VALUES (?, ?, ?, ?)";
+                    "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY =
             "UPDATE reviews " +
-            "SET content = ?, is_positive = ? " +
-            "WHERE id = ?";
+                    "SET content = ?, is_positive = ? " +
+                    "WHERE id = ?";
     private static final String CALCULATE_USEFUL_QUERY =
             "SELECT COALESCE(SUM(vote), 0) " +
-            "FROM review_likes " +
-            "WHERE review_id = ?";
+                    "FROM review_likes " +
+                    "WHERE review_id = ?";
     private static final String CHECK_ID_QUERY =
             "SELECT COUNT(*) " +
-            "FROM reviews " +
-            "WHERE id = ?";
+                    "FROM reviews " +
+                    "WHERE id = ?";
     private static final String DELETE_QUERY =
             "DELETE FROM reviews " +
-            "WHERE id = ?";
+                    "WHERE id = ?";
     private static final String CHECK_USER_ID_QUERY =
             "SELECT COUNT(*) " +
-            "FROM users " +
-            "WHERE id = ?";
+                    "FROM users " +
+                    "WHERE id = ?";
     private static final String CHECK_FILM_ID_QUERY =
             "SELECT COUNT(*) " +
-            "FROM films " +
-            "WHERE id = ?";
+                    "FROM films " +
+                    "WHERE id = ?";
+
 
     public ReviewRepository(JdbcTemplate jdbc, RowMapper<Review> mapper) {
         super(jdbc, mapper, Review.class);
@@ -69,7 +70,7 @@ public class ReviewRepository extends BaseRepository<Review> {
                 review.getUserId()
         );
         review.setId(reviewId);
-        return  findById(reviewId).orElseThrow(() -> new NotFoundException(notFound));
+        return findById(reviewId).orElseThrow(() -> new NotFoundException(notFound));
     }
 
     public Review update(Review review) {
@@ -86,7 +87,7 @@ public class ReviewRepository extends BaseRepository<Review> {
     }
 
     public void delete(Long id) {
-        findById(id).orElseThrow(() -> new NotFoundException(notFound));
+        Review rev = findById(id).orElseThrow(() -> new NotFoundException(notFound));
         delete(
                 DELETE_QUERY,
                 id
