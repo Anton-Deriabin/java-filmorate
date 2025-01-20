@@ -10,11 +10,10 @@ import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.mappers.FilmRowMapper;
-import ru.yandex.practicum.filmorate.storage.mappers.LikeRowMapper;
-import ru.yandex.practicum.filmorate.storage.mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.storage.mappers.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,7 +21,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({LikeRepository.class, LikeRowMapper.class, FilmRepository.class, FilmRowMapper.class, UserRepository.class, UserRowMapper.class})
+@Import({
+        LikeRepository.class,
+        LikeRowMapper.class,
+        FilmRepository.class,
+        FilmRowMapper.class,
+        UserRepository.class,
+        UserRowMapper.class,
+        GenreRepository.class,
+        GenreRowMapper.class,
+        DirectorRepository.class,
+        DirectorRowMapper.class
+})
 class LikeRepositoryTest {
     private final LikeRepository likeRepository;
     private final FilmRepository filmRepository;
@@ -47,6 +57,9 @@ class LikeRepositoryTest {
         film.setReleaseDate(LocalDate.of(2023, 1, 1));
         film.setDuration(120);
         film.setMpaRating(new ru.yandex.practicum.filmorate.model.MpaRating(1L, "G"));
+        film.setGenres(new HashSet<>());
+        film.setDirectors(new HashSet<>());
+        film.setLikes(new HashSet<>());
         film = filmRepository.create(film);
         filmId = film.getId();
     }
@@ -73,7 +86,3 @@ class LikeRepositoryTest {
         assertThat(likes).hasSize(1);
     }
 }
-
-
-
-

@@ -14,19 +14,17 @@ import java.time.LocalDate;
 public class User {
     Long id;
 
-    @NotNull
-    @NotBlank
-    @Email
+    @NotBlank(message = "email не может быть пустым")
+    @Email(message = "email должен соответствоввать паттерну email")
     String email;
 
     String name;
 
-    @NotNull
-    @NotBlank
+    @NotBlank(message = "логин не может быть пустым")
     @Pattern(regexp = "^[^\\s]+$", message = "Логин не должен содержать пробелы")
     String login;
 
-    @NotNull
+    @NotNull(message = "день рождения не может быть null")
     @Past
     LocalDate birthday;
 }

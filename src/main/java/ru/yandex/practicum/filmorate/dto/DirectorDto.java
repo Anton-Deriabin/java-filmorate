@@ -6,8 +6,7 @@ import lombok.experimental.FieldDefaults;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class GenreDto {
+public class DirectorDto {
     Long id;
     String name;
 }
-
