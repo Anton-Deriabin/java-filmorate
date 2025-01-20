@@ -13,7 +13,6 @@ import lombok.experimental.FieldDefaults;
 public class Review {
     Long id;
 
-    @NotNull(message = "Отзыв не может быть null")
     @NotBlank(message = "Отзыв не может быть пустым")
     String content;
 

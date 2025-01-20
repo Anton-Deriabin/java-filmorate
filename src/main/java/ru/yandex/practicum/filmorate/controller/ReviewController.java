@@ -11,6 +11,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/reviews")
 public class ReviewController {
+    private final String reviewIdPath = "/{id}";
+    private final String reviewIdLikePath = "/{id}/like/{user-id}";
+    private final String dislikeIdLikePath = "/{id}/dislike/{user-id}";
 
     private final ReviewService reviewService;
 
@@ -25,7 +28,7 @@ public class ReviewController {
         return reviewService.findAll(filmId, count);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(reviewIdPath)
     public ReviewDto findReview(@PathVariable Long id) {
         return reviewService.findById(id);
     }
@@ -40,28 +43,28 @@ public class ReviewController {
         return reviewService.update(ReviewMapper.mapToReview(reviewDto));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(reviewIdPath)
     public void delete(@PathVariable Long id) {
         reviewService.delete(id);
     }
 
-    @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
+    @PutMapping(reviewIdLikePath)
+    public void addLike(@PathVariable Long id, @PathVariable("user-id") Long userId) {
         reviewService.addVote(id, userId, 1);
     }
 
-    @PutMapping("/{id}/dislike/{userId}")
-    public void addDislike(@PathVariable Long id, @PathVariable Long userId) {
+    @PutMapping(dislikeIdLikePath)
+    public void addDislike(@PathVariable Long id, @PathVariable("user-id") Long userId) {
         reviewService.addVote(id, userId, -1);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
-    public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
+    @DeleteMapping(reviewIdLikePath)
+    public void removeLike(@PathVariable Long id, @PathVariable("user-id") Long userId) {
         reviewService.deleteVote(id, userId);
     }
 
-    @DeleteMapping("/{id}/dislike/{userId}")
-    public void removeDislike(@PathVariable Long id, @PathVariable Long userId) {
+    @DeleteMapping(dislikeIdLikePath)
+    public void removeDislike(@PathVariable Long id, @PathVariable("user-id") Long userId) {
         reviewService.deleteVote(id, userId);
     }
 }

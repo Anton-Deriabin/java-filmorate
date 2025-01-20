@@ -13,6 +13,7 @@ import java.util.List;
 @RequestMapping("/directors")
 @RequiredArgsConstructor
 public class DirectorController {
+    private final String directorIdPath = "/{id}";
     private final DirectorService directorService;
 
     @GetMapping
@@ -20,7 +21,7 @@ public class DirectorController {
         return directorService.findAll();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(directorIdPath)
     public DirectorDto findById(@PathVariable Long id) {
         return directorService.findById(id);
     }
@@ -35,7 +36,7 @@ public class DirectorController {
         return directorService.update(director);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(directorIdPath)
     public void delete(@PathVariable Long id) {
         directorService.delete(id);
     }
