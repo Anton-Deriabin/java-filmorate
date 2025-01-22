@@ -15,6 +15,7 @@ public class LikeRowMapper implements RowMapper<Like> {
         like.setId(rs.getLong("id"));
         like.setFilmId(rs.getLong("film_id"));
         like.setUserId(rs.getLong("user_id"));
+        like.setMark(rs.getLong("mark"));
         return like;
     }
 }

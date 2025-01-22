@@ -75,14 +75,14 @@ public class FilmService {
         List<Film> films = filmRepository.getCommonFilms(userId, friendId);
         filmEnrichmentService.enrichFilms(films);
         return films.stream()
+                .sorted(Comparator.comparingDouble(Film::getRate).reversed())
                 .map(FilmMapper::mapToFilmDto)
-                .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
                 .toList();
     }
 
-    public void addLike(Long filmId, Long userId) {
+    public void addLike(Long filmId, Long userId, Double mark) {
         eventRepository.addEvent(userId, filmId, EventType.LIKE, Operation.ADD);
-        likeRepository.addLike(filmId, userId);
+        likeRepository.addLike(filmId, userId, mark);
     }
 
     public void deleteLike(Long filmId, Long userId) {
@@ -94,7 +94,7 @@ public class FilmService {
         List<Film> films = filmRepository.findAllWithFilters(genreId, year);
         filmEnrichmentService.enrichFilms(films);
         return films.stream()
-                .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
+                .sorted(Comparator.comparingDouble(Film::getRate).reversed())
                 .limit(count)
                 .map(FilmMapper::mapToFilmDto)
                 .toList();
@@ -114,7 +114,7 @@ public class FilmService {
         if ("year".equals(sortBy)) {
             films.sort(Comparator.comparing(Film::getReleaseDate));
         } else {
-            films.sort((a, b) -> b.getLikes().size() - a.getLikes().size());
+            films.sort(Comparator.comparingDouble(Film::getRate).reversed());
         }
 
         return films.stream()
@@ -137,7 +137,7 @@ public class FilmService {
         filmEnrichmentService.enrichFilms(films);
 
         return films.stream()
-                .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
+                .sorted(Comparator.comparingDouble(Film::getRate).reversed())
                 .map(FilmMapper::mapToFilmDto)
                 .toList();
     }

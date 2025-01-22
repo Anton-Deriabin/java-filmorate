@@ -5,12 +5,14 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.storage.DirectorRepository;
 import ru.yandex.practicum.filmorate.storage.GenreRepository;
 import ru.yandex.practicum.filmorate.storage.LikeRepository;
 
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +39,7 @@ public class FilmEnrichmentService {
         films.forEach(film -> {
             film.setGenres(genresByFilm.getOrDefault(film.getId(), new LinkedHashSet<>()));
             film.setDirectors(directorsByFilm.getOrDefault(film.getId(), new LinkedHashSet<>()));
-            List<Like> likes = likeRepository.findLikesByFilmId(film.getId());
-            film.setLikes(new HashSet<>(likes));
+            film.setRate(likeRepository.getAverageRate(film.getId()));
         });
     }
 }
