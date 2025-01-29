@@ -19,10 +19,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FilmController {
     private final String filmsIdPath = "/{id}";
-    private final String likePath = "/{id}/like/{userId}";
+    private final String putLikePath = "/{id}/like/{user-id}/{mark}";
+    private final String deleteLikePath = "/{id}/like/{user-id}";
     private final String popularPath = "/popular";
     private final String commonFilmsPath = "/common";
-    private final String directorPath = "/director/{directorId}";
+    private final String directorPath = "/director/{director-id}";
     private final String searchPath = "/search";
     private final FilmService filmService;
 
@@ -51,13 +52,13 @@ public class FilmController {
         filmService.delete(id);
     }
 
-    @PutMapping(likePath)
-    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
-        filmService.addLike(id, userId);
+    @PutMapping(putLikePath)
+    public void addLike(@PathVariable Long id, @PathVariable("user-id") Long userId, @PathVariable Double mark) {
+        filmService.addLike(id, userId, mark);
     }
 
-    @DeleteMapping(likePath)
-    public void deleteLike(@PathVariable Long id, @PathVariable Long userId) {
+    @DeleteMapping(deleteLikePath)
+    public void deleteLike(@PathVariable Long id, @PathVariable("user-id") Long userId) {
         filmService.deleteLike(id, userId);
     }
 
@@ -72,7 +73,7 @@ public class FilmController {
 
     @GetMapping(directorPath)
     public List<FilmDto> getFilmsByDirector(
-            @PathVariable Long directorId,
+            @PathVariable("director-id") Long directorId,
             @RequestParam(defaultValue = "likes") String sortBy
     ) {
         return filmService.getFilmsByDirector(directorId, sortBy);

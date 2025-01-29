@@ -7,18 +7,15 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Like;
 
 import java.sql.ResultSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
 public class LikeRepository extends BaseRepository<Like> {
     private static final String INSERT_QUERY =
-            "INSERT INTO likes(film_id, user_id) " +
-                    "VALUES (?, ?)";
+            "MERGE INTO likes (film_id, user_id, mark) " +
+                    "KEY(film_id, user_id) " +
+                    "VALUES (?, ?, ?)";
     private static final String CHECK_REQUEST_QUERY =
             "SELECT COUNT(*) " +
                     "FROM likes " +
@@ -42,23 +39,23 @@ public class LikeRepository extends BaseRepository<Like> {
             "SELECT user_id, film_id " +
                     "FROM likes " +
                     "WHERE user_id IN (:USER_IDS)";
+    private static final String GET_AVERAGE_RATE =
+            "SELECT COALESCE(AVG(mark), 0) AS rate " +
+                    "FROM likes " +
+                    "WHERE film_id = ?";
 
     public LikeRepository(JdbcTemplate jdbc, RowMapper<Like> mapper) {
         super(jdbc, mapper, Like.class);
     }
 
-    public void addLike(Long filmId, Long userId) {
-        Integer count = jdbc.queryForObject(CHECK_REQUEST_QUERY, Integer.class, filmId, userId);
-        if (count != 0) {
-            return;
-        }
-        insert(INSERT_QUERY, filmId, userId);
+    public void addLike(Long filmId, Long userId, Double mark) {
+            insert(INSERT_QUERY, filmId, userId, mark);
     }
 
     public void deleteLike(Long filmId, Long userId) {
         Integer count = jdbc.queryForObject(CHECK_REQUEST_QUERY, Integer.class, filmId, userId);
         if (count == 0) {
-            throw new NotFoundException(String.format("Фильму с id = %d, еще не поставлен поставлен лайк " +
+            throw new NotFoundException(String.format("Фильму с id = %d, еще не поставлен поставлена оценка " +
                     "пользователем с id = %d", filmId, userId));
         }
         delete(DELETE_QUERY, filmId, userId);
@@ -76,7 +73,6 @@ public class LikeRepository extends BaseRepository<Like> {
         if (filmIds.isEmpty()) {
             return List.of();
         }
-
         String query = FIND_USERS_WHO_LIKED_FILMS.replace(
                 ":FILM_IDS",
                 filmIds.stream().map(String::valueOf).collect(Collectors.joining(", "))
@@ -88,20 +84,21 @@ public class LikeRepository extends BaseRepository<Like> {
         if (userIds.isEmpty()) {
             return Map.of();
         }
-
         String userIdsCommaSeparated = userIds.stream()
                 .map(String::valueOf)
                 .collect(Collectors.joining(", "));
         String query = FIND_ALL_LIKED_FILMS_FOR_ALL_USERS.replace(":USER_IDS", userIdsCommaSeparated);
         Map<Long, Set<Long>> usersWithLikedFilms = new HashMap<>();
-
         jdbc.query(query, (ResultSet rs) -> {
             long userId = rs.getInt("user_id");
             long filmId = rs.getInt("film_id");
             usersWithLikedFilms.putIfAbsent(userId, new HashSet<>());
             usersWithLikedFilms.get(userId).add(filmId);
         });
-
         return usersWithLikedFilms;
+    }
+
+    public Double getAverageRate(Long filmId) {
+        return jdbc.queryForObject(GET_AVERAGE_RATE, Double.class, filmId);
     }
 }

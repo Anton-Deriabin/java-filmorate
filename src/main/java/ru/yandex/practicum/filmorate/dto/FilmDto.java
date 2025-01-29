@@ -7,10 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
-import ru.yandex.practicum.filmorate.model.Like;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -36,7 +34,7 @@ public class FilmDto {
 
     Set<GenreDto> genres;
 
-    Set<Like> likes = new HashSet<>();
+    Double rate;
 
     Set<DirectorDto> directors;
 }

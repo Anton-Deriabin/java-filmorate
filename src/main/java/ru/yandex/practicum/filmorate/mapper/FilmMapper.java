@@ -11,9 +11,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.LinkedHashSet;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FilmMapper {
@@ -24,6 +24,7 @@ public class FilmMapper {
         dto.setDescription(film.getDescription());
         dto.setReleaseDate(film.getReleaseDate());
         dto.setDuration(film.getDuration());
+        dto.setRate(film.getRate());
         if (film.getMpaRating() != null) {
             MpaRatingDto mpaDto = new MpaRatingDto();
             mpaDto.setId(film.getMpaRating().getId());
@@ -40,9 +41,6 @@ public class FilmMapper {
                     })
                     .collect(Collectors.toCollection(LinkedHashSet::new)); // Используем LinkedHashSet
             dto.setGenres(genreDtos);
-        }
-        if (film.getLikes() != null) {
-            dto.setLikes(film.getLikes());
         }
         if (film.getDirectors() != null) {
             Set<DirectorDto> directorDtos = film.getDirectors().stream()
