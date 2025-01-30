@@ -2,16 +2,21 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Like;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.mappers.*;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
@@ -35,6 +40,7 @@ class LikeRepositoryTest {
 
     private Long filmId;
     private Long userId;
+    private Long mark;
 
     @BeforeEach
     void setUp() {
@@ -45,6 +51,10 @@ class LikeRepositoryTest {
         user.setBirthday(LocalDate.of(2000, 1, 1));
         user = userRepository.create(user);
         userId = user.getId();
+
+        Like like = new Like();
+        like.setMark(10L);
+        mark = like.getMark();
 
         Film film = new Film();
         film.setName("Test Film");
@@ -58,17 +68,17 @@ class LikeRepositoryTest {
         film = filmRepository.create(film);
         filmId = film.getId();
     }
-    /*
+
     @Test
     void addLike_ValidLike_AddsLike() {
-        likeRepository.addLike(filmId, userId);
+        likeRepository.addLike(filmId, userId, (double) mark);
         List<Like> likes = likeRepository.findLikesByFilmId(filmId);
         assertThat(likes).anyMatch(like -> like.getUserId().equals(userId));
     }
 
     @Test
     void deleteLike_ValidLike_DeletesLike() {
-        likeRepository.addLike(filmId, userId);
+        likeRepository.addLike(filmId, userId, (double) mark);
         likeRepository.deleteLike(filmId, userId);
         List<Like> likes = likeRepository.findLikesByFilmId(filmId);
         assertThat(likes).noneMatch(like -> like.getUserId().equals(userId));
@@ -76,10 +86,8 @@ class LikeRepositoryTest {
 
     @Test
     void findLikesByFilmId_ReturnsListOfLikes() {
-        likeRepository.addLike(filmId, userId);
+        likeRepository.addLike(filmId, userId, (double) mark);
         List<Like> likes = likeRepository.findLikesByFilmId(filmId);
         assertThat(likes).hasSize(1);
     }
-
-     */
 }
