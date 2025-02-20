@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -26,6 +27,7 @@ public class FilmService {
     private final DirectorRepository directorRepository;
     private final EventRepository eventRepository;
 
+    @Cacheable("films")
     public List<FilmDto> findAll() {
         List<Film> films = filmRepository.findAll();
         filmEnrichmentService.enrichFilms(films);
@@ -34,6 +36,7 @@ public class FilmService {
                 .toList();
     }
 
+    @Cacheable(value = "filmsByIds", key = "#filmIds")
     public List<FilmDto> findAllWithIds(Set<Long> filmIds) {
         List<Film> films = filmRepository.findAllWithIds(filmIds);
         filmEnrichmentService.enrichFilms(films);
@@ -42,6 +45,7 @@ public class FilmService {
                 .toList();
     }
 
+    @Cacheable(value = "filmById", key = "#id")
     public Optional<FilmDto> findById(Long id) {
         Optional<Film> filmOptional = filmRepository.findById(id);
         if (filmOptional.isPresent()) {
@@ -71,6 +75,7 @@ public class FilmService {
         filmRepository.delete(id);
     }
 
+    @Cacheable(value = "commonFilms", key = "#userId + '_' + #friendId")
     public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
         List<Film> films = filmRepository.getCommonFilms(userId, friendId);
         filmEnrichmentService.enrichFilms(films);
@@ -90,6 +95,7 @@ public class FilmService {
         likeRepository.deleteLike(filmId, userId);
     }
 
+    @Cacheable(value = "popularFilms", key = "#count + '_' + #genreId + '_' + #year")
     public List<FilmDto> getPopularFilms(int count, Integer genreId, Integer year) {
         List<Film> films = filmRepository.findAllWithFilters(genreId, year);
         filmEnrichmentService.enrichFilms(films);
@@ -107,6 +113,7 @@ public class FilmService {
         }
     }
 
+    @Cacheable(value = "filmsByDirector", key = "#directorId + '_' + #sortBy")
     public List<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
         List<Film> films = filmRepository.findFilmsByDirector(directorId);
         filmEnrichmentService.enrichFilms(films);
@@ -122,6 +129,7 @@ public class FilmService {
                 .toList();
     }
 
+    @Cacheable(value = "searchFilms", key = "#query + '_' + #by")
     public List<FilmDto> search(String query, String by) {
         if (query == null || query.isBlank()) {
             return List.of();

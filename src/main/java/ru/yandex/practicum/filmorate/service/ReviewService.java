@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.ReviewDto;
@@ -28,6 +29,7 @@ public class ReviewService {
         this.eventRepository = eventRepository;
     }
 
+    @Cacheable("reviews")
     public List<ReviewDto> findAll(Long filmId, Integer count) {
         List<Review> reviews = reviewRepository.findAll();
         if (filmId != null) {
@@ -47,7 +49,7 @@ public class ReviewService {
                 .toList();
     }
 
-
+    @Cacheable(value = "reviews", key = "#id")
     public ReviewDto findById(long id) {
         return reviewRepository.findById(id)
                 .map(review -> {
