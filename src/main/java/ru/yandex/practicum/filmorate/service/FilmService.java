@@ -122,13 +122,10 @@ public class FilmService {
         if (query == null || query.isBlank()) {
             return List.of();
         }
-
         List<String> searchBy = Arrays.asList(by.toLowerCase().split(","));
-
         if (!searchBy.contains("director") && !searchBy.contains("title")) {
             throw new ValidationException("Параметр 'by' должен содержать 'director' и/или 'title'");
         }
-
         List<Film> films = filmRepository.search(query, searchBy);
         List<FilmDto> enrichedFilms = enrichAndMapFilms(films);
         return enrichedFilms.stream()
@@ -138,8 +135,7 @@ public class FilmService {
 
     private List<FilmDto> enrichAndMapFilms(List<Film> films) {
         int totalFilms = films.size();
-        int batchSize = (totalFilms + 3) / 4; // Разделим на 4 части, округляя вверх
-
+        int batchSize = (totalFilms + 3) / 4;
         List<Callable<List<Film>>> tasks = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             int startIdx = i * batchSize;
@@ -150,7 +146,6 @@ public class FilmService {
                 return subList;
             });
         }
-
         try {
             List<Future<List<Film>>> futures = executorService.invokeAll(tasks);
             List<Film> enrichedFilms = new ArrayList<>();

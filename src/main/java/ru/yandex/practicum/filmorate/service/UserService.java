@@ -155,19 +155,14 @@ public class UserService {
 
     private List<UserDto> enrichAndMapUsers(List<User> users) {
         int totalUsers = users.size();
-        int batchSize = (totalUsers + 3) / 4; // Разделим на 4 части, округляя вверх
-
+        int batchSize = (totalUsers + 3) / 4;
         List<Callable<List<User>>> tasks = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
             int startIdx = i * batchSize;
             int endIdx = Math.min((i + 1) * batchSize, totalUsers);
             List<User> subList = users.subList(startIdx, endIdx);
-            tasks.add(() -> {
-                // Здесь можно добавить обогащение пользователей, если необходимо
-                return subList;
-            });
+            tasks.add(() -> subList);
         }
-
         try {
             List<Future<List<User>>> futures = executorService.invokeAll(tasks);
             List<User> enrichedUsers = new ArrayList<>();
