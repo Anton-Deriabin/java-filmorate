@@ -17,6 +17,7 @@ import ru.yandex.practicum.filmorate.storage.LikeRepository;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
@@ -26,23 +27,18 @@ public class FilmService {
     private final FilmEnrichmentService filmEnrichmentService;
     private final DirectorRepository directorRepository;
     private final EventRepository eventRepository;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(21);
 
     @Cacheable("films")
     public List<FilmDto> findAll() {
         List<Film> films = filmRepository.findAll();
-        filmEnrichmentService.enrichFilms(films);
-        return films.stream()
-                .map(FilmMapper::mapToFilmDto)
-                .toList();
+        return enrichAndMapFilms(films);
     }
 
     @Cacheable(value = "filmsByIds", key = "#filmIds")
     public List<FilmDto> findAllWithIds(Set<Long> filmIds) {
         List<Film> films = filmRepository.findAllWithIds(filmIds);
-        filmEnrichmentService.enrichFilms(films);
-        return films.stream()
-                .map(FilmMapper::mapToFilmDto)
-                .toList();
+        return enrichAndMapFilms(films);
     }
 
     @Cacheable(value = "filmById", key = "#id")
@@ -78,11 +74,7 @@ public class FilmService {
     @Cacheable(value = "commonFilms", key = "#userId + '_' + #friendId")
     public List<FilmDto> getCommonFilms(Long userId, Long friendId) {
         List<Film> films = filmRepository.getCommonFilms(userId, friendId);
-        filmEnrichmentService.enrichFilms(films);
-        return films.stream()
-                .sorted(Comparator.comparingDouble(Film::getRate).reversed())
-                .map(FilmMapper::mapToFilmDto)
-                .toList();
+        return enrichAndMapFilms(films);
     }
 
     public void addLike(Long filmId, Long userId, Double mark) {
@@ -98,11 +90,10 @@ public class FilmService {
     @Cacheable(value = "popularFilms", key = "#count + '_' + #genreId + '_' + #year")
     public List<FilmDto> getPopularFilms(int count, Integer genreId, Integer year) {
         List<Film> films = filmRepository.findAllWithFilters(genreId, year);
-        filmEnrichmentService.enrichFilms(films);
-        return films.stream()
-                .sorted(Comparator.comparingDouble(Film::getRate).reversed())
+        List<FilmDto> enrichedFilms = enrichAndMapFilms(films);
+        return enrichedFilms.stream()
+                .sorted(Comparator.comparingDouble(FilmDto::getRate).reversed())
                 .limit(count)
-                .map(FilmMapper::mapToFilmDto)
                 .toList();
     }
 
@@ -116,17 +107,14 @@ public class FilmService {
     @Cacheable(value = "filmsByDirector", key = "#directorId + '_' + #sortBy")
     public List<FilmDto> getFilmsByDirector(Long directorId, String sortBy) {
         List<Film> films = filmRepository.findFilmsByDirector(directorId);
-        filmEnrichmentService.enrichFilms(films);
         directorRepository.existById(directorId);
+        List<FilmDto> enrichedFilms = enrichAndMapFilms(films);
         if ("year".equals(sortBy)) {
-            films.sort(Comparator.comparing(Film::getReleaseDate));
+            enrichedFilms.sort(Comparator.comparing(FilmDto::getReleaseDate));
         } else {
-            films.sort(Comparator.comparingDouble(Film::getRate).reversed());
+            enrichedFilms.sort(Comparator.comparingDouble(FilmDto::getRate).reversed());
         }
-
-        return films.stream()
-                .map(FilmMapper::mapToFilmDto)
-                .toList();
+        return enrichedFilms;
     }
 
     @Cacheable(value = "searchFilms", key = "#query + '_' + #by")
@@ -142,11 +130,38 @@ public class FilmService {
         }
 
         List<Film> films = filmRepository.search(query, searchBy);
-        filmEnrichmentService.enrichFilms(films);
-
-        return films.stream()
-                .sorted(Comparator.comparingDouble(Film::getRate).reversed())
-                .map(FilmMapper::mapToFilmDto)
+        List<FilmDto> enrichedFilms = enrichAndMapFilms(films);
+        return enrichedFilms.stream()
+                .sorted(Comparator.comparingDouble(FilmDto::getRate).reversed())
                 .toList();
+    }
+
+    private List<FilmDto> enrichAndMapFilms(List<Film> films) {
+        int totalFilms = films.size();
+        int batchSize = (totalFilms + 3) / 4; // Разделим на 4 части, округляя вверх
+
+        List<Callable<List<Film>>> tasks = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            int startIdx = i * batchSize;
+            int endIdx = Math.min((i + 1) * batchSize, totalFilms);
+            List<Film> subList = films.subList(startIdx, endIdx);
+            tasks.add(() -> {
+                filmEnrichmentService.enrichFilms(subList);
+                return subList;
+            });
+        }
+
+        try {
+            List<Future<List<Film>>> futures = executorService.invokeAll(tasks);
+            List<Film> enrichedFilms = new ArrayList<>();
+            for (Future<List<Film>> future : futures) {
+                enrichedFilms.addAll(future.get());
+            }
+            return enrichedFilms.stream()
+                    .map(FilmMapper::mapToFilmDto)
+                    .toList();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Ошибка при выполнении многопоточной операции", e);
+        }
     }
 }
