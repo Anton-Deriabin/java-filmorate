@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.GenreDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -16,12 +17,14 @@ public class GenreService {
         this.genreRepository = genreRepository;
     }
 
+    @Cacheable("genres")
     public List<GenreDto> findAll() {
         return genreRepository.findAll().stream()
                 .map(GenreMapper::mapToGenreDto)
                 .toList();
     }
 
+    @Cacheable(value = "genres", key = "#id")
     public GenreDto findById(Long id) {
         return genreRepository.findById(id)
                 .map(GenreMapper::mapToGenreDto)

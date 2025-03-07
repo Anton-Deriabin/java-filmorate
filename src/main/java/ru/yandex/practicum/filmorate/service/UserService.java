@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.FilmDto;
 import ru.yandex.practicum.filmorate.dto.UserDto;
@@ -15,11 +16,7 @@ import ru.yandex.practicum.filmorate.storage.FriendshipRepository;
 import ru.yandex.practicum.filmorate.storage.LikeRepository;
 import ru.yandex.practicum.filmorate.storage.UserRepository;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -41,6 +38,7 @@ public class UserService {
         this.eventRepository = eventRepository;
     }
 
+    @Cacheable("users")
     public List<UserDto> findAll() {
         return userRepository.findAll()
                 .stream()
@@ -48,6 +46,7 @@ public class UserService {
                 .toList();
     }
 
+    @Cacheable(value = "users", key = "#id")
     public UserDto findById(Long id) {
         return userRepository.findById(id)
                 .map(UserMapper::mapToUserDto)
@@ -66,7 +65,6 @@ public class UserService {
         if (newUser.getId() == null) {
             throw new ValidationException("Id должен быть указан");
         }
-
         checkUserExists(newUser.getId());
         checkName(newUser);
         return UserMapper.mapToUserDto(userRepository.update(newUser));
@@ -76,6 +74,7 @@ public class UserService {
         userRepository.delete(id);
     }
 
+    @Cacheable(value = "friends", key = "#receiver")
     public List<UserDto> getFriends(Long receiver) {
         checkUserExists(receiver);
 
@@ -95,6 +94,7 @@ public class UserService {
         friendshipRepository.deleteFriend(sender, receiver);
     }
 
+    @Cacheable(value = "commonFriends", key = "#userId + '_' + #friendId")
     public List<UserDto> getCommonFriends(Long userId, Long friendId) {
         return userRepository.getCommonFriends(userId, friendId)
                 .stream()
@@ -102,23 +102,18 @@ public class UserService {
                 .toList();
     }
 
+    @Cacheable(value = "recommendations", key = "#userId")
     public List<FilmDto> getRecommendationsForUser(Long userId) {
         checkUserExists(userId);
-
         List<Long> filmsLikedByUser = likeRepository.getFilmIdsLikedByUser(userId);
-
         if (filmsLikedByUser.isEmpty()) {
             return List.of();
         }
-
         List<Long> usersWithSameTaste = likeRepository.getUserIdsWhoLikedFilms(filmsLikedByUser, userId);
-
         if (usersWithSameTaste.isEmpty()) {
             return List.of();
         }
-
         Map<Long, Set<Long>> userToLikedFilmsMap = likeRepository.getUsersWithLikedFilms(usersWithSameTaste);
-
         long nearestUserIdByTaste = userToLikedFilmsMap.keySet().stream()
                 .map((Long id) -> {
                     List<Long> commonFilmsWithLikes = new ArrayList<>(filmsLikedByUser);
@@ -135,10 +130,14 @@ public class UserService {
         if (nearestUserIdByTaste < 0) {
             return List.of();
         }
-
         Set<Long> recommendations = userToLikedFilmsMap.get(nearestUserIdByTaste);
         filmsLikedByUser.forEach(recommendations::remove);
         return filmService.findAllWithIds(recommendations);
+    }
+
+    @Cacheable(value = "events", key = "#id")
+    public List<Event> getEventFeed(Long id) {
+        return eventRepository.findFeedForUser(id);
     }
 
     private void checkUserExists(long userId) {
@@ -151,9 +150,5 @@ public class UserService {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-    }
-
-    public List<Event> getEventFeed(Long id) {
-        return eventRepository.findFeedForUser(id);
     }
 }

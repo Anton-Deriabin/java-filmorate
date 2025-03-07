@@ -6,9 +6,13 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
+
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ReviewDto {
+public class ReviewDto implements Serializable {
+    static final long serialVersionUID = 1L;
+
     Long reviewId;
 
     @NotBlank(message = "Отзыв не может быть пустым")

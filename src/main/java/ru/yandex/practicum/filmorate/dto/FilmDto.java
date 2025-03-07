@@ -8,12 +8,15 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Set;
 
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class FilmDto {
+public class FilmDto implements Serializable {
+    static final long serialVersionUID = 1L;
+
     Long id;
 
     @NotBlank(message = "Имя фильма не может быть пустым")

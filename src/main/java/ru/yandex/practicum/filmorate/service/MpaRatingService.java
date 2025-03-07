@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.MpaRatingDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -16,12 +17,14 @@ public class MpaRatingService {
         this.mpaRatingRepository = mpaRatingRepository;
     }
 
+    @Cacheable("ratings")
     public List<MpaRatingDto> findAll() {
         return mpaRatingRepository.findAll().stream()
                 .map(MpaRatingMapper::mapToMpaRatingDto)
                 .toList();
     }
 
+    @Cacheable(value = "ratings", key = "#id")
     public MpaRatingDto findById(Long id) {
         return mpaRatingRepository.findById(id)
                 .map(MpaRatingMapper::mapToMpaRatingDto)

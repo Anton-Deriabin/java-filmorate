@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.DirectorDto;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -15,6 +16,7 @@ import java.util.List;
 public class DirectorService {
     private final DirectorRepository directorRepository;
 
+    @Cacheable("directors")
     public List<DirectorDto> findAll() {
         return directorRepository.findAll()
                 .stream()
@@ -22,6 +24,7 @@ public class DirectorService {
                 .toList();
     }
 
+    @Cacheable(value = "directors", key = "#id")
     public DirectorDto findById(Long id) {
         return directorRepository.findById(id)
                 .map(DirectorMapper::mapToDirectorDto)
