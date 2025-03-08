@@ -27,7 +27,7 @@ public class FilmService {
     private final FilmEnrichmentService filmEnrichmentService;
     private final DirectorRepository directorRepository;
     private final EventRepository eventRepository;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(21);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     @Cacheable("films")
     public List<FilmDto> findAll() {
@@ -134,12 +134,18 @@ public class FilmService {
     }
 
     private List<FilmDto> enrichAndMapFilms(List<Film> films) {
+        if (films.size() < 10) {
+            filmEnrichmentService.enrichFilms(films);
+            return films.stream().map(FilmMapper::mapToFilmDto).toList();
+        }
         int totalFilms = films.size();
-        int batchSize = (totalFilms + 3) / 4;
+        int threadCount = Math.min(Runtime.getRuntime().availableProcessors(), totalFilms);
+        int batchSize = (totalFilms + threadCount - 1) / threadCount;
         List<Callable<List<Film>>> tasks = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < threadCount; i++) {
             int startIdx = i * batchSize;
             int endIdx = Math.min((i + 1) * batchSize, totalFilms);
+            if (startIdx >= totalFilms) break;
             List<Film> subList = films.subList(startIdx, endIdx);
             tasks.add(() -> {
                 filmEnrichmentService.enrichFilms(subList);

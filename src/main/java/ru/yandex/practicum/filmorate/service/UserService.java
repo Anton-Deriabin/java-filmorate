@@ -17,7 +17,6 @@ import ru.yandex.practicum.filmorate.storage.LikeRepository;
 import ru.yandex.practicum.filmorate.storage.UserRepository;
 
 import java.util.*;
-import java.util.concurrent.*;
 
 @Service
 public class UserService {
@@ -26,7 +25,6 @@ public class UserService {
     private final LikeRepository likeRepository;
     private final FilmService filmService;
     private final EventRepository eventRepository;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(21);
 
     public UserService(UserRepository userRepository,
                        FriendshipRepository friendshipRepository,
@@ -42,8 +40,10 @@ public class UserService {
 
     @Cacheable("users")
     public List<UserDto> findAll() {
-        List<User> users = userRepository.findAll();
-        return enrichAndMapUsers(users);
+        return userRepository.findAll()
+                .stream()
+                .map(UserMapper::mapToUserDto)
+                .toList();
     }
 
     @Cacheable(value = "users", key = "#id")
@@ -137,7 +137,6 @@ public class UserService {
 
     @Cacheable(value = "events", key = "#id")
     public List<Event> getEventFeed(Long id) {
-        checkUserExists(id);
         return eventRepository.findFeedForUser(id);
     }
 
@@ -150,30 +149,6 @@ public class UserService {
     private void checkName(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
-        }
-    }
-
-    private List<UserDto> enrichAndMapUsers(List<User> users) {
-        int totalUsers = users.size();
-        int batchSize = (totalUsers + 3) / 4;
-        List<Callable<List<User>>> tasks = new ArrayList<>();
-        for (int i = 0; i < 4; i++) {
-            int startIdx = i * batchSize;
-            int endIdx = Math.min((i + 1) * batchSize, totalUsers);
-            List<User> subList = users.subList(startIdx, endIdx);
-            tasks.add(() -> subList);
-        }
-        try {
-            List<Future<List<User>>> futures = executorService.invokeAll(tasks);
-            List<User> enrichedUsers = new ArrayList<>();
-            for (Future<List<User>> future : futures) {
-                enrichedUsers.addAll(future.get());
-            }
-            return enrichedUsers.stream()
-                    .map(UserMapper::mapToUserDto)
-                    .toList();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("Ошибка при выполнении многопоточной операции", e);
         }
     }
 }

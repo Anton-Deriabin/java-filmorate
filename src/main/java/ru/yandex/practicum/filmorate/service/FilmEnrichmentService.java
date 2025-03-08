@@ -9,10 +9,12 @@ import ru.yandex.practicum.filmorate.storage.DirectorRepository;
 import ru.yandex.practicum.filmorate.storage.GenreRepository;
 import ru.yandex.practicum.filmorate.storage.LikeRepository;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +22,7 @@ public class FilmEnrichmentService {
     private final GenreRepository genreRepository;
     private final DirectorRepository directorRepository;
     private final LikeRepository likeRepository;
+    private final ExecutorService executorService;
 
     public void enrichFilm(Film film) {
         if (film == null) return;
@@ -29,17 +32,39 @@ public class FilmEnrichmentService {
     public void enrichFilms(List<Film> films) {
         if (films == null || films.isEmpty()) return;
 
-        Map<Long, Set<Genre>> genresByFilm = genreRepository.findGenresForFilms(
-                films.stream().map(Film::getId).toList()
-        );
-        Map<Long, Set<Director>> directorsByFilm = directorRepository.findDirectorsForFilms(
-                films.stream().map(Film::getId).toList()
-        );
+        List<Long> filmIds = films.stream().map(Film::getId).toList();
 
-        films.forEach(film -> {
-            film.setGenres(genresByFilm.getOrDefault(film.getId(), new LinkedHashSet<>()));
-            film.setDirectors(directorsByFilm.getOrDefault(film.getId(), new LinkedHashSet<>()));
-            film.setRate(likeRepository.getAverageRate(film.getId()));
-        });
+        Callable<Map<Long, Set<Object>>> genresTask = () -> {
+            Map<Long, Set<Genre>> genres = genreRepository.findGenresForFilms(filmIds);
+            return genres.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
+        };
+
+        Callable<Map<Long, Set<Object>>> directorsTask = () -> {
+            Map<Long, Set<Director>> directors = directorRepository.findDirectorsForFilms(filmIds);
+            return directors.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> new HashSet<>(e.getValue())));
+        };
+
+        try {
+            List<Future<Map<Long, Set<Object>>>> futures = executorService.invokeAll(List.of(genresTask, directorsTask));
+            Map<Long, Set<Object>> genresByFilm = futures.get(0).get();
+            Map<Long, Set<Object>> directorsByFilm = futures.get(1).get();
+
+            films.forEach(film -> {
+                Set<Genre> genres = genresByFilm.getOrDefault(film.getId(), new LinkedHashSet<>()).stream()
+                        .map(genre -> (Genre) genre)
+                        .collect(Collectors.toSet());
+                Set<Director> directors = directorsByFilm.getOrDefault(film.getId(), new LinkedHashSet<>()).stream()
+                        .map(director -> (Director) director)
+                        .collect(Collectors.toSet());
+
+                film.setGenres(genres);
+                film.setDirectors(directors);
+                film.setRate(likeRepository.getAverageRate(film.getId()));
+            });
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Ошибка при многопоточном обогащении фильмов", e);
+        }
     }
 }
